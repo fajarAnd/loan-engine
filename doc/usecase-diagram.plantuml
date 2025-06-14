@@ -1,0 +1,40 @@
+@startuml velocity_team
+left to right direction
+actor "Surveyor" as surveyor
+actor "Staff" as staff
+actor "Investor" as investor
+actor "Borrower" as borrower
+actor "Field Officer" as fieldOfficer
+
+
+rectangle system as "Loan System" {
+  usecase "Submit Loan Proposal" as proposeLoan
+  usecase "View Status Proposed Loan" as statusLoan
+  usecase "Approval Loan" as approvalLoan
+  usecase "Disburse fund" as disbursement
+  usecase "Sign Agreement Loan" as signLoan
+  usecase "List Available Loan" as loan
+  usecase "Make Investment" as loanInvest
+  usecase "Upload Survey Documentation" as inputDocVis
+  usecase "Conduct Field Survey" as conductSurvey
+  usecase "Validate Signed Document" as validateSignDoc
+  usecase "Sign Agreement Investment" as SignInvestment
+  usecase "View Investment Portofolio" as viewPorto
+}
+
+borrower --> proposeLoan
+proposeLoan ..> signLoan: <<extend>>
+borrower --> statusLoan
+staff --> statusLoan
+staff --> approvalLoan
+fieldOfficer --> disbursement
+fieldOfficer --> validateSignDoc
+investor --> loan
+investor --> viewPorto
+investor --> loanInvest
+loanInvest ..> SignInvestment : <<extend>>
+surveyor --> inputDocVis
+surveyor --> conductSurvey
+
+
+@enduml

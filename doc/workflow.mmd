@@ -1,0 +1,30 @@
+flowchart TD
+    sysLoan((System Loan)) -- borrower -->  proposeLoan[Propose Loan]
+    subgraph State: Propose
+        proposeLoan -- surveyor --> sb[Survey Borrower]
+        sb[Input Survey Document] --> valDoc{Validation Document}
+    end
+
+    subgraph State: Approve
+        valDoc --> loanReject[Loan Rejected]
+        loanReject --> st(((Stop)))
+        valDoc --> approveLoan[Loan Approved]
+        approveLoan --> generateAgreement[Generate Agreement Template]
+
+    end
+    
+    subgraph State: Invest
+        generateAgreement --> listingLoan[Listing Available Investment]
+        listingLoan -- Investor --> investingLoan[Make investment]
+        investingLoan --> loanFullfillDec{Total Investment = Principal?}
+        loanFullfillDec -- no --> listingLoan
+
+        loanFullfillDec -- yes --> sendAgreement[Send Agreement email to Investor]
+    end
+
+    subgraph State: Disburesement
+        sendAgreement --> disbursement[Disburse to Borrower]
+        disbursement -- borrower --> loanActive[Loan Active]
+    end
+
+    loanActive --> e(((End)))
