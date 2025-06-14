@@ -1,0 +1,11 @@
+flowchart TD
+    sysLoan(((System Loan))) -- borrower -->  proposeLoan[Propose Loan]
+    proposeLoan -- surveyor --> sb[Survey Borrower]
+    sb[Input Doc Visited] --> valDoc{Validation Document}
+    valDoc --> loanReject[Loan Rejected]
+    valDoc --> approveLoan[Loan Approved]
+    approveLoan --> listingLoan[Listing Offering Loan]
+    listingLoan -- Investor --> investingLoan[Investing Loan]
+    investingLoan --> loanFullfillDec{Loan Already Fulfill?}
+    loanFullfillDec -- no --> listingLoan
+    loanFullfillDec -- yes --> disbursement[Disbursement to Borrower]
