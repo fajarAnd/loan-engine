@@ -1,6 +1,4 @@
 # Loan Engine - 📋 Summary Requirements
-Based on **Example 3: Loan Service** assessment requirements:
-
 ## Core Business Rules
 - **State Flow**: `proposed` → `approved` → `invested` → `disbursed`
 - **Forward-only movement**: No backward state transitions allowed
@@ -91,26 +89,5 @@ Based on use case diagram, below are feature we will provide.
 
 **API:**
 - `GET /api/v1/health` - Basic health check
-
-
-## 🛠 Tech Stack
-
-### **Backend Framework**
-- **Language**: Go (Golang)
-- **HTTP Framework**: Chi Router (RESTful API)
-- **Architecture**: Clean Architecture / Hexagonal
-
-### **Database**
-- **Primary DB**: PostgreSQL
-- **ORM**: PGX (v5.7.5) - High-performance PostgreSQL driver
-- **Migrations**: golang-migrate
-
-
-### **File Storage**
-- **Storage**: AWS S3 / Local filesystem
-- **Supported formats**: PDF, JPEG, PNG
-- **Security**: Signed URLs for document access
-
----
 
 
