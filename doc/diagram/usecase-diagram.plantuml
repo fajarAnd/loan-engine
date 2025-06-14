@@ -1,6 +1,5 @@
 @startuml velocity_team
 left to right direction
-actor "Surveyor" as surveyor
 actor "Staff" as staff
 actor "Investor" as investor
 actor "Borrower" as borrower
@@ -16,7 +15,6 @@ rectangle system as "Loan System" {
   usecase "List Available Loan" as loan
   usecase "Make Investment" as loanInvest
   usecase "Upload Survey Documentation" as inputDocVis
-  usecase "Conduct Field Survey" as conductSurvey
   usecase "Validate Signed Document" as validateSignDoc
   usecase "Sign Agreement Investment" as SignInvestment
   usecase "View Investment Portofolio" as viewPorto
@@ -33,8 +31,7 @@ investor --> loan
 investor --> viewPorto
 investor --> loanInvest
 loanInvest ..> SignInvestment : <<extend>>
-surveyor --> inputDocVis
-surveyor --> conductSurvey
+fieldOfficer --> inputDocVis
 
 
 @enduml

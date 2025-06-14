@@ -1,0 +1,50 @@
+@startuml refined_loan_system
+left to right direction
+
+actor "Borrower" as borrower
+actor "Staff" as staff
+actor "Investor" as investor
+actor "Field Officer" as fieldOfficer
+
+rectangle "Loan System (Example 3 Focused)" {
+
+  ' Core Loan Lifecycle
+  usecase "Submit Loan Proposal" as submitLoan
+  usecase "View Loan Status" as viewStatus
+  usecase "Approve Loan" as approveLoan
+  usecase "Disburse Loan" as disburseLoan
+
+  ' Investment Management
+  usecase "Browse Available Loans" as browseLoans
+  usecase "Make Investment" as makeInvestment
+  usecase "View Portfolio" as viewPortfolio
+
+  ' Document Handling (integrated)
+  usecase "Upload Field Proof" as uploadProof
+  usecase "Upload Signed Agreement" as uploadSigned
+}
+
+' Borrower interactions
+borrower --> submitLoan
+borrower --> viewStatus
+
+' Staff interactions (approval with integrated survey)
+staff --> viewStatus
+staff --> approveLoan
+approveLoan ..> uploadProof : <<include>>
+
+' Investor interactions
+investor --> browseLoans
+investor --> makeInvestment
+investor --> viewPortfolio
+
+' Field Officer interactions
+fieldOfficer --> disburseLoan
+disburseLoan ..> uploadSigned : <<include>>
+
+' Relationships
+submitLoan --> viewStatus : <<triggers>>
+approveLoan --> browseLoans : <<enables>>
+makeInvestment --> disburseLoan : <<when fully funded>>
+
+@enduml
