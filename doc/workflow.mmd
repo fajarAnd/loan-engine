@@ -1,30 +1,36 @@
 flowchart TD
-    sysLoan((System Loan)) -- borrower -->  proposeLoan[Propose Loan]
+    sysLoan((System Loan)) -- borrower --> proposeLoan[Propose Loan]
+
     subgraph State: Propose
         proposeLoan -- surveyor --> sb[Survey Borrower]
-        sb[Input Survey Document] --> valDoc{Validation Document}
+        sb --> inputDoc[Input Survey Document]
+        inputDoc --> valDoc{Validation Document}
     end
 
     subgraph State: Approve
-        valDoc --> loanReject[Loan Rejected]
+        valDoc -->|Invalid| loanReject[Loan Rejected]
         loanReject --> st(((Stop)))
-        valDoc --> approveLoan[Loan Approved]
-        approveLoan --> generateAgreement[Generate Agreement Template]
-
+        valDoc -->|Valid| approveLoan[Loan Approved]
+        approveLoan --> generateTemplate[Generate Agreement Template]
     end
-    
+
     subgraph State: Invest
-        generateAgreement --> listingLoan[Listing Available Investment]
-        listingLoan -- Investor --> investingLoan[Make investment]
-        investingLoan --> loanFullfillDec{Total Investment = Principal?}
-        loanFullfillDec -- no --> listingLoan
+        generateTemplate --> listingLoan[Listing Available Investment]
+        listingLoan -- Investor --> makeInvestment[Make Investment]
+        makeInvestment --> sendIndividualAgreement[Send Individual Agreement to Investor]
+        sendIndividualAgreement --> updateTotal[Update Total Investment]
+        updateTotal --> checkTotal{Total Investment = Principal?}
 
-        loanFullfillDec -- yes --> sendAgreement[Send Agreement email to Investor]
+        checkTotal -->|No| listingLoan
+        checkTotal -->|Yes| loanFullyInvested[Loan Fully Invested]
+        loanFullyInvested --> sendCompletionNotification[Send Completion Notification to All Investors]
     end
 
-    subgraph State: Disburesement
-        sendAgreement --> disbursement[Disburse to Borrower]
-        disbursement -- borrower --> loanActive[Loan Active]
+    subgraph State: Disbursement
+        sendCompletionNotification --> waitingDisbursement[Waiting for Disbursement]
+        waitingDisbursement -- Field Officer --> collectSignedAgreement[Collect Signed Agreement from Borrower]
+        collectSignedAgreement --> disbursement[Disburse to Borrower]
+        disbursement --> loanActive[Loan Active]
     end
 
     loanActive --> e(((End)))
