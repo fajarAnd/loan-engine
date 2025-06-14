@@ -52,6 +52,7 @@ entity "investments" as investment {
   investment_amount : decimal(15,2)
   expected_return : decimal(15,2)
   investment_date : date
+  agreement_url : text
   agreement_signed : boolean
   agreement_signed_date : date
   created_at : timestamp
