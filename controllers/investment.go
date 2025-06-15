@@ -36,7 +36,6 @@ func (c *InvestmentController) CreateInvestment(w http.ResponseWriter, r *http.R
 		return
 	}
 
-	// Get user from context
 	user, err := middleware.GetUserFromContext(r.Context())
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to get user from context")
@@ -59,7 +58,6 @@ func (c *InvestmentController) CreateInvestment(w http.ResponseWriter, r *http.R
 		return
 	}
 
-	// Create investment
 	response, err := c.investmentUsecase.CreateInvestment(r.Context(), loanID, user.UserID, &req)
 	if err != nil {
 		log.Error().Err(err).
