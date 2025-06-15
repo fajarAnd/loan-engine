@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/fajar-andriansyah/loan-engine/internal/pdf"
 	"github.com/fajar-andriansyah/loan-engine/models"
 	"github.com/fajar-andriansyah/loan-engine/repositories"
 	"github.com/google/uuid"
@@ -67,6 +68,12 @@ func (u *investmentUsecase) CreateInvestment(ctx context.Context, loanID, invest
 	// Calculate expected return based on ROI rate
 	expectedReturn := req.InvestmentAmount * (loan.ROIRate / 100)
 
+	// Get investor name for agreement
+	investorName, err := u.investmentRepo.GetInvestorName(ctx, investorUUID)
+	if err != nil {
+		return nil, err
+	}
+
 	// Create investment
 	now := time.Now()
 	investment := &models.Investment{
@@ -84,19 +91,22 @@ func (u *investmentUsecase) CreateInvestment(ctx context.Context, loanID, invest
 		return nil, err
 	}
 
+	// Generate individual investment agreement PDF
+	agreementURL, err := pdf.GenerateInvestmentAgreement(investment, loan, investorName)
+	if err != nil {
+		return nil, fmt.Errorf("failed to generate investment agreement: %w", err)
+	}
+
 	// Calculate new totals
 	newTotalInvested := loan.TotalInvested + req.InvestmentAmount
 	newRemainingAmount := loan.PrincipalAmount - newTotalInvested
 
 	// Update loan state based on funding status
 	var newState string
-	var agreementURL string
 
 	if newRemainingAmount == 0 {
 		// Fully funded - transition to INVESTED
 		newState = "INVESTED"
-		// TODO: Generate agreement PDF here
-		agreementURL = fmt.Sprintf("/agreements/investment_agreement_%s.pdf", loanUUID.String())
 	} else if loan.CurrentState == "APPROVED" {
 		// First investment - transition to FUNDING
 		newState = "FUNDING"

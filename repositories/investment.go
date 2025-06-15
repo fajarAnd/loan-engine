@@ -16,6 +16,7 @@ type InvestmentRepository interface {
 	CreateInvestment(ctx context.Context, investment *models.Investment) error
 	UpdateLoanState(ctx context.Context, loanID uuid.UUID, newState string) error
 	GetTotalInvestedAmount(ctx context.Context, loanID uuid.UUID) (float64, error)
+	GetInvestorName(ctx context.Context, investorID uuid.UUID) (string, error)
 }
 
 type investmentRepository struct {
@@ -132,4 +133,19 @@ func (r *investmentRepository) GetTotalInvestedAmount(ctx context.Context, loanI
 	}
 
 	return total, nil
+}
+
+func (r *investmentRepository) GetInvestorName(ctx context.Context, investorID uuid.UUID) (string, error) {
+	query := `SELECT full_name FROM investors WHERE id = $1`
+
+	var name string
+	err := r.db.QueryRow(ctx, query, investorID).Scan(&name)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return "", fmt.Errorf("investor not found")
+		}
+		return "", fmt.Errorf("failed to get investor name: %w", err)
+	}
+
+	return name, nil
 }
