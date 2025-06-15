@@ -3,7 +3,7 @@ package main
 import (
 	"flag"
 	"github.com/fajar-andriansyah/loan-engine/config"
-	"github.com/fajar-andriansyah/loan-engine/pkg/database"
+	database2 "github.com/fajar-andriansyah/loan-engine/infrastructure/database"
 	"log"
 	_ "os"
 	_ "strconv"
@@ -23,15 +23,15 @@ func main() {
 	flag.Parse()
 
 	// Connect to database
-	dbConfig := database.LoadDatabaseConfig()
-	db, err := database.Connect(dbConfig)
+	dbConfig := database2.LoadDatabaseConfig()
+	db, err := database2.Connect(dbConfig)
 	if err != nil {
 		log.Fatalf("Failed to connect to database: %v", err)
 	}
 	defer db.Close()
 
 	// Create migration instance with schema
-	migration, err := database.NewMigration(db, dbConfig.Schema)
+	migration, err := database2.NewMigration(db, dbConfig.Schema)
 	if err != nil {
 		log.Fatalf("Failed to create migration: %v", err)
 	}

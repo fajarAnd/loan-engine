@@ -23,8 +23,6 @@ func main() {
 
 	// Start server
 	addr := ":" + port
-	log.Info().Msgf("🚀 OpenAI Vision Service starting on %s", addr)
-	log.Info().Msgf("📚 API Documentation available at http://localhost%s/", addr)
 	log.Info().Msgf("🔍 Health check at http://localhost%s/__health", addr)
 
 	if err := http.ListenAndServe(addr, router); err != nil {
