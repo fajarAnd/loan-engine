@@ -28,17 +28,20 @@ func GetRouter() chi.Router {
 	authRepo := repositories.NewAuthRepository(db)
 	loanRepo := repositories.NewLoanRepository(db)
 	fileRepo := repositories.NewFileRepository(db)
+	investmentRepo := repositories.NewInvestmentRepository(db) // Add this line
 
 	// Usecases
 	jwtSecret := viper.GetString("jwt.secret")
 	authUsecase := usecase.NewAuthUsecase(authRepo, jwtSecret)
 	loanUsecase := usecase.NewLoanUsecase(loanRepo)
 	fileUsecase := usecase.NewFileUsecase(fileRepo)
+	investmentUsecase := usecase.NewInvestmentUsecase(investmentRepo) // Add this line
 
 	// Controllers
 	authController := controller.NewAuthController(authUsecase)
 	loanController := controller.NewLoanController(loanUsecase)
 	fileController := controller.NewFileController(fileUsecase)
+	investmentController := controller.NewInvestmentController(investmentUsecase) // Add this line
 
 	// Static file serving for uploaded documents
 	workDir, _ := filepath.Abs(".")
@@ -86,9 +89,8 @@ func GetRouter() chi.Router {
 			// Investor routes
 			r.Group(func(r chi.Router) {
 				r.Use(middleware.RequireUserType("investor"))
-				// TODO: Add investor specific routes
+				r.Post("/loans/{id}/investments", investmentController.CreateInvestment)
 				// r.Get("/loans/available", loanController.GetAvailableLoans)
-				// r.Post("/loans/{id}/investments", investmentController.MakeInvestment)
 				// r.Get("/portfolio", investmentController.GetPortfolio)
 			})
 		})

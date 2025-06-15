@@ -1,0 +1,254 @@
+###
+# *** LOGIN AS INVESTOR FIRST
+POST http://localhost:8080/api/v1/auth/login
+Content-Type: application/json
+
+{
+  "email": "rina.investor@gmail.com",
+  "password": "password123",
+  "user_type": "investor"
+}
+
+> {%
+    client.global.set("investor_token", response.body.data.data.access_token);
+%}
+
+###
+
+# *** CREATE AND APPROVE A LOAN FIRST (prerequisite)
+# Login as borrower
+POST http://localhost:8080/api/v1/auth/login
+Content-Type: application/json
+
+{
+  "email": "siti.peminjam@gmail.com",
+  "password": "password123",
+  "user_type": "borrower"
+}
+
+> {%
+    client.global.set("borrower_token", response.body.data.data.access_token);
+%}
+
+###
+
+# Create loan proposal
+POST http://localhost:8080/api/v1/loans
+Authorization: Bearer {{borrower_token}}
+Content-Type: application/json
+
+{
+  "principal_amount": 5000000.00,
+  "interest_rate": 10.00,
+  "roi_rate": 8.00,
+  "loan_term_month": 12
+}
+
+> {%
+    client.global.set("loan_id", response.body.data.data.id);
+%}
+
+###
+
+# Login as validator to upload survey
+POST http://localhost:8080/api/v1/auth/login
+Content-Type: application/json
+
+{
+  "email": "validator@amartha.com",
+  "password": "password123",
+  "user_type": "employee"
+}
+
+> {%
+    client.global.set("validator_token", response.body.data.data.access_token);
+%}
+
+###
+
+# Upload survey document (prerequisite for approval)
+POST http://localhost:8080/api/v1/files/upload
+Authorization: Bearer {{validator_token}}
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="loan_id"
+
+{{loan_id}}
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="survey_date"
+
+2025-06-15
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="survey_notes"
+
+Borrower verified and business operational for investment
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="file"; filename="survey_proof.jpg"
+Content-Type: image/jpeg
+
+[Binary file content]
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+###
+
+# Login as field officer to approve loan
+POST http://localhost:8080/api/v1/auth/login
+Content-Type: application/json
+
+{
+  "email": "officer@amartha.com",
+  "password": "password123",
+  "user_type": "employee"
+}
+
+> {%
+    client.global.set("officer_token", response.body.data.data.access_token);
+%}
+
+###
+
+# Approve loan (PROPOSED → APPROVED)
+PUT http://localhost:8080/api/v1/loans/{{loan_id}}/approve
+Authorization: Bearer {{officer_token}}
+Content-Type: application/json
+
+{
+  "approval_notes": "Loan approved and ready for investment. Borrower meets all criteria."
+}
+
+###
+
+# *** MAKE INVESTMENT - SUCCESS (First Investment: APPROVED → FUNDING)
+POST http://localhost:8080/api/v1/loans/{{loan_id}}/investments
+Authorization: Bearer {{investor_token}}
+Content-Type: application/json
+
+{
+  "investment_amount": 2000000.00
+}
+
+###
+
+# *** LOGIN AS SECOND INVESTOR
+POST http://localhost:8080/api/v1/auth/login
+Content-Type: application/json
+
+{
+  "email": "doni.kapital@gmail.com",
+  "password": "password123",
+  "user_type": "investor"
+}
+
+> {%
+    client.global.set("investor2_token", response.body.data.data.access_token);
+%}
+
+###
+
+# *** MAKE SECOND INVESTMENT - SUCCESS (FUNDING → INVESTED)
+POST http://localhost:8080/api/v1/loans/{{loan_id}}/investments
+Authorization: Bearer {{investor2_token}}
+Content-Type: application/json
+
+{
+  "investment_amount": 3000000.00
+}
+
+###
+
+# *** MAKE INVESTMENT - Validation Error (Missing amount)
+POST http://localhost:8080/api/v1/loans/{{loan_id}}/investments
+Authorization: Bearer {{investor_token}}
+Content-Type: application/json
+
+{}
+
+###
+
+# *** MAKE INVESTMENT - Validation Error (Negative amount)
+POST http://localhost:8080/api/v1/loans/{{loan_id}}/investments
+Authorization: Bearer {{investor_token}}
+Content-Type: application/json
+
+{
+  "investment_amount": -1000.00
+}
+
+###
+
+# *** MAKE INVESTMENT - Exceeds Remaining Amount
+POST http://localhost:8080/api/v1/loans/{{loan_id}}/investments
+Authorization: Bearer {{investor_token}}
+Content-Type: application/json
+
+{
+  "investment_amount": 6000000.00
+}
+
+###
+
+# *** MAKE INVESTMENT - Duplicate Investment (Same investor)
+POST http://localhost:8080/api/v1/loans/{{loan_id}}/investments
+Authorization: Bearer {{investor_token}}
+Content-Type: application/json
+
+{
+  "investment_amount": 1000000.00
+}
+
+###
+
+# *** MAKE INVESTMENT - Invalid Loan ID
+POST http://localhost:8080/api/v1/loans/invalid-uuid/investments
+Authorization: Bearer {{investor_token}}
+Content-Type: application/json
+
+{
+  "investment_amount": 1000000.00
+}
+
+###
+
+# *** MAKE INVESTMENT - Non-existent Loan
+POST http://localhost:8080/api/v1/loans/123e4567-e89b-12d3-a456-426614174999/investments
+Authorization: Bearer {{investor_token}}
+Content-Type: application/json
+
+{
+  "investment_amount": 1000000.00
+}
+
+###
+
+# *** MAKE INVESTMENT - Wrong User Type (Borrower)
+POST http://localhost:8080/api/v1/loans/{{loan_id}}/investments
+Authorization: Bearer {{borrower_token}}
+Content-Type: application/json
+
+{
+  "investment_amount": 1000000.00
+}
+
+###
+
+# *** MAKE INVESTMENT - No Authentication
+POST http://localhost:8080/api/v1/loans/{{loan_id}}/investments
+Content-Type: application/json
+
+{
+  "investment_amount": 1000000.00
+}
+
+###
+
+# *** MAKE INVESTMENT - Invalid Token
+POST http://localhost:8080/api/v1/loans/{{loan_id}}/investments
+Authorization: Bearer invalid-token-here
+Content-Type: application/json
+
+{
+  "investment_amount": 1000000.00
+}
+
+###
