@@ -11,6 +11,7 @@ require (
 	github.com/google/uuid v1.6.0
 	github.com/google/wire v0.6.0
 	github.com/jackc/pgx/v5 v5.7.5
+	github.com/jung-kurt/gofpdf v1.16.2
 	github.com/lib/pq v1.10.9
 	github.com/pgx-contrib/pgxotel v0.0.0-20250521223540-fbf5b86df67f
 	github.com/rs/zerolog v1.34.0

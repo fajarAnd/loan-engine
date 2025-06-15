@@ -3,6 +3,7 @@ package controller
 import (
 	"encoding/json"
 	"github.com/fajar-andriansyah/loan-engine/internal/helpers"
+	"github.com/go-chi/chi/v5"
 	"net/http"
 
 	"github.com/fajar-andriansyah/loan-engine/infrastructure/http/middleware"
@@ -76,6 +77,57 @@ func (c *LoanController) CreateLoanProposal(w http.ResponseWriter, r *http.Reque
 		Msg("Loan proposal created successfully")
 
 	c.sendSuccessResponse(w, http.StatusCreated, "Loan proposal created successfully", response)
+}
+
+func (c *LoanController) ApproveLoan(w http.ResponseWriter, r *http.Request) {
+	loanID := chi.URLParam(r, "id")
+	if loanID == "" {
+		c.sendErrorResponse(w, http.StatusBadRequest, "Loan ID is required", nil)
+		return
+	}
+
+	user, err := middleware.GetUserFromContext(r.Context())
+	if err != nil {
+		c.sendErrorResponse(w, http.StatusUnauthorized, "User context not found", nil)
+		return
+	}
+
+	// Parse request body
+	var req models.ApproveLoanRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		log.Error().Err(err).Msg("Failed to decode request body")
+		c.sendErrorResponse(w, http.StatusBadRequest, "Invalid request body", nil)
+		return
+	}
+
+	response, err := c.loanUsecase.ApproveLoan(r.Context(), loanID, user.UserID, &req)
+	if err != nil {
+		log.Error().Err(err).Str("loan_id", loanID).Str("employee_id", user.UserID).Msg("Failed to approve loan")
+
+		// Handle specific errors
+		errMsg := err.Error()
+		switch {
+		case errMsg == "loan not found":
+			c.sendErrorResponse(w, http.StatusNotFound, "Loan not found", nil)
+		case errMsg == "survey not completed":
+			c.sendErrorResponse(w, http.StatusConflict, "Survey must be completed before approval", nil)
+		case errMsg == "loan must be in proposed state":
+			c.sendErrorResponse(w, http.StatusConflict, "Loan must be in proposed state", nil)
+		case errMsg == "invalid loan ID" || errMsg == "invalid employee ID":
+			c.sendErrorResponse(w, http.StatusBadRequest, errMsg, nil)
+		default:
+			c.sendErrorResponse(w, http.StatusInternalServerError, "Failed to approve loan", nil)
+		}
+		return
+	}
+
+	log.Info().
+		Str("loan_id", loanID).
+		Str("employee_id", user.UserID).
+		Str("new_state", response.CurrentState).
+		Msg("Loan approved successfully")
+
+	c.sendSuccessResponse(w, http.StatusOK, "Loan approved successfully", response)
 }
 
 func (c *LoanController) sendSuccessResponse(w http.ResponseWriter, statusCode int, message string, data interface{}) {

@@ -70,8 +70,7 @@ func GetRouter() chi.Router {
 				// Field officer routes
 				r.Group(func(r chi.Router) {
 					r.Use(middleware.RequireRole("FIELD_OFFICER"))
-					// TODO: Add field officer specific routes
-					// r.Put("/loans/{id}/approve", loanController.ApproveLoan)
+					r.Put("/loans/{id}/approve", loanController.ApproveLoan)
 					// r.Put("/loans/{id}/disburse", loanController.DisburseLoan)
 				})
 
