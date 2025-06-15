@@ -1,10 +1,12 @@
 package main
 
 import (
+	"github.com/spf13/viper"
 	"net/http"
 	"os"
 
 	"github.com/fajar-andriansyah/loan-engine/config"
+	db "github.com/fajar-andriansyah/loan-engine/infrastructure/database"
 	"github.com/fajar-andriansyah/loan-engine/infrastructure/http/router"
 	"github.com/rs/zerolog/log"
 )
@@ -18,6 +20,9 @@ func main() {
 		port = "8080"
 	}
 
+	if err := db.InitDB(viper.GetString("database.dsn")); err != nil {
+		log.Warn().Err(err).Msg("")
+	}
 	// Setup routes
 	router := router.GetRouter()
 
