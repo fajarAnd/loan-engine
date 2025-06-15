@@ -1,0 +1,2 @@
+DROP TABLE IF EXISTS loans;
+DROP TYPE IF EXISTS loan_state_enum;
