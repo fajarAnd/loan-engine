@@ -1,0 +1,1 @@
+ALTER TYPE loan_state_enum ADD VALUE 'FUNDING';

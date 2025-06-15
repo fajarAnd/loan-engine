@@ -5,6 +5,7 @@
 - **Multiple investors**: Each loan can have multiple investors with individual amounts
 - **Investment constraint**: Total invested amount cannot exceed loan principal
 - **Auto state transition**: Loan becomes `invested` when total investment equals principal
+- **Adding State Funding**: Based on my analysis, to simplify the logic before disbursement, I have introduced a new state, `Funding`, positioned between `Approved` and `Invested`.
 
 ### Workflow e2e
 ```mermaid

@@ -27,7 +27,7 @@ entity "loans" as loan {
   interest_rate : decimal(5,2)
   roi_rate : decimal(5,2)
   loan_term_month : int
-  current_state : enum('PROPOSED','APPROVED','INVESTED','DISBURSED', 'REJECTED')
+  current_state : enum('PROPOSED','APPROVED','FUNDING','INVESTED','DISBURSED', 'REJECTED')
   loan_agreement_pdf_url: text
   survey_date : date
   field_visit_proof_url : text
