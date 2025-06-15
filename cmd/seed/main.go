@@ -105,7 +105,7 @@ func seedEmployees(ctx context.Context, db *sql.DB) error {
 			ID:           uuid.New(),
 			Username:     "field_validator_001",
 			Email:        "validator@amartha.com",
-			PasswordHash: "$2a$10$N9qo8uLOickgx2ZMRZoMye/Lo10Leoj/Th6H82H.urSx7/A0FWwka", // password123
+			PasswordHash: "$2a$10$WYmkE5HjRSYrJcUS9OGL/u9biq0iYc6GoUPiYLVd1UvO8hZPo98fO", // password123
 			FullName:     "Ahmad Validator",
 			PhoneNumber:  "+6281234567890",
 			Role:         "FIELD_VALIDATOR",
@@ -118,7 +118,7 @@ func seedEmployees(ctx context.Context, db *sql.DB) error {
 			ID:           uuid.New(),
 			Username:     "field_officer_001",
 			Email:        "officer@amartha.com",
-			PasswordHash: "$2a$10$N9qo8uLOickgx2ZMRZoMye/Lo10Leoj/Th6H82H.urSx7/A0FWwka", // password123
+			PasswordHash: "$2a$10$WYmkE5HjRSYrJcUS9OGL/u9biq0iYc6GoUPiYLVd1UvO8hZPo98fO", // password123
 			FullName:     "Sari Fieldofficer",
 			PhoneNumber:  "+6281234567891",
 			Role:         "FIELD_OFFICER",
@@ -131,7 +131,7 @@ func seedEmployees(ctx context.Context, db *sql.DB) error {
 			ID:           uuid.New(),
 			Username:     "admin_001",
 			Email:        "admin@amartha.com",
-			PasswordHash: "$2a$10$N9qo8uLOickgx2ZMRZoMye/Lo10Leoj/Th6H82H.urSx7/A0FWwka", // password123
+			PasswordHash: "$2a$10$WYmkE5HjRSYrJcUS9OGL/u9biq0iYc6GoUPiYLVd1UvO8hZPo98fO", // password123
 			FullName:     "Budi Administrator",
 			PhoneNumber:  "+6281234567892",
 			Role:         "ADMIN",
@@ -179,7 +179,7 @@ func seedInvestors(ctx context.Context, db *sql.DB) error {
 			IsActive:       true,
 			CreatedAt:      time.Now(),
 			UpdatedAt:      time.Now(),
-			PasswordHash:   "$2a$10$N9qo8uLOickgx2ZMRZoMye/Lo10Leoj/Th6H82H.urSx7/A0FWwka", // password123
+			PasswordHash:   "$2a$10$WYmkE5HjRSYrJcUS9OGL/u9biq0iYc6GoUPiYLVd1UvO8hZPo98fO", // password123
 		},
 		{
 			ID:             uuid.New(),
@@ -192,7 +192,7 @@ func seedInvestors(ctx context.Context, db *sql.DB) error {
 			IsActive:       true,
 			CreatedAt:      time.Now(),
 			UpdatedAt:      time.Now(),
-			PasswordHash:   "$2a$10$N9qo8uLOickgx2ZMRZoMye/Lo10Leoj/Th6H82H.urSx7/A0FWwka", // password123
+			PasswordHash:   "$2a$10$WYmkE5HjRSYrJcUS9OGL/u9biq0iYc6GoUPiYLVd1UvO8hZPo98fO", // password123
 		},
 	}
 
@@ -237,7 +237,7 @@ func seedBorrowers(ctx context.Context, db *sql.DB) error {
 			AccountHolderName: "Siti Peminjam",
 			CreatedAt:         time.Now(),
 			UpdatedAt:         time.Now(),
-			PasswordHash:      "$2a$10$N9qo8uLOickgx2ZMRZoMye/Lo10Leoj/Th6H82H.urSx7/A0FWwka", // password123
+			PasswordHash:      "$2a$10$WYmkE5HjRSYrJcUS9OGL/u9biq0iYc6GoUPiYLVd1UvO8hZPo98fO", // password123
 		},
 		{
 			ID:                uuid.New(),
@@ -254,7 +254,7 @@ func seedBorrowers(ctx context.Context, db *sql.DB) error {
 			AccountHolderName: "Joko Wirausaha",
 			CreatedAt:         time.Now(),
 			UpdatedAt:         time.Now(),
-			PasswordHash:      "$2a$10$N9qo8uLOickgx2ZMRZoMye/Lo10Leoj/Th6H82H.urSx7/A0FWwka", // password123
+			PasswordHash:      "$2a$10$WYmkE5HjRSYrJcUS9OGL/u9biq0iYc6GoUPiYLVd1UvO8hZPo98fO", // password123
 		},
 	}
 

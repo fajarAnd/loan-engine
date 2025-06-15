@@ -1,0 +1,38 @@
+
+# *** LOGIN - FIELD_VALIDATOR
+# curl -X POST http://localhost:8080/api/v1/auth/login
+#  -H "Content-Type: application/json"
+#  -d '{
+#    "email": "validator@amartha.com",
+#    "password": "password123",
+#    "user_type": "employee"
+#  }'
+POST http://localhost:8080/api/v1/auth/login
+Content-Type: application/json
+
+{
+  "email": "validator@amartha.com",
+  "password": "password123",
+  "user_type": "employee"
+}
+
+###
+
+# *** LOGIN - Borrower
+# curl -X POST http://localhost:8080/api/v1/auth/login
+#  -H "Content-Type: application/json"
+#  -d '{
+#    "email": "siti.peminjam@gmail.com",
+#    "password": "password123",
+#    "user_type": "borrower"
+#  }'
+POST http://localhost:8080/api/v1/auth/login
+Content-Type: application/json
+
+{
+  "email": "siti.peminjam@gmail.com",
+  "password": "password123",
+  "user_type": "borrower"
+}
+
+###
