@@ -28,3 +28,7 @@ migrate-create:
 # Install migration tool
 install-migrate:
 	go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@latest
+
+# Database seeding
+seed:
+	go run cmd/seed/main.go
