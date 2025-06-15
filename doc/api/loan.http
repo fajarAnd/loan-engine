@@ -1,0 +1,86 @@
+# *** CREATE LOAN PROPOSAL - Borrower
+# First login as borrower to get JWT token
+POST http://localhost:8080/api/v1/auth/login
+Content-Type: application/json
+
+{
+  "email": "siti.peminjam@gmail.com",
+  "password": "password123",
+  "user_type": "borrower"
+}
+
+> {%
+    client.global.set("borrower_token", response.body.data.data.access_token);
+%}
+
+###
+
+# *** CREATE LOAN PROPOSAL
+POST http://localhost:8080/api/v1/loans
+Authorization: Bearer {{borrower_token}}
+Content-Type: application/json
+
+{
+  "principal_amount": 5000000.00,
+  "interest_rate": 10.00,
+  "roi_rate": 8.00,
+  "loan_term_month": 12
+}
+
+###
+
+# *** CREATE LOAN PROPOSAL - Validation Error Example
+POST http://localhost:8080/api/v1/loans
+Authorization: Bearer {{borrower_token}}
+Content-Type: application/json
+
+{
+  "principal_amount": -1000.00,
+  "interest_rate": 10.00,
+  "roi_rate": 8.00,
+  "loan_term_month": 0
+}
+
+###
+
+# *** CREATE LOAN PROPOSAL - Without Auth (Should fail)
+POST http://localhost:8080/api/v1/loans
+Content-Type: application/json
+
+{
+  "principal_amount": 5000000.00,
+  "interest_rate": 10.00,
+  "roi_rate": 8.00,
+  "loan_term_month": 12
+}
+
+###
+
+# *** CREATE LOAN PROPOSAL - Wrong User Type (Should fail)
+# Login as employee first
+POST http://localhost:8080/api/v1/auth/login
+Content-Type: application/json
+
+{
+  "email": "validator@amartha.com",
+  "password": "password123",
+  "user_type": "employee"
+}
+
+> {%
+    client.global.set("employee_token", response.body.data.data.access_token);
+%}
+
+###
+
+# Try to create loan with employee token (should fail)
+POST http://localhost:8080/api/v1/loans
+Authorization: Bearer {{employee_token}}
+Content-Type: application/json
+
+{
+  "principal_amount": 5000000.00,
+  "interest_rate": 10.00,
+  "roi_rate": 8.00,
+  "loan_term_month": 12
+}

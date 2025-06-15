@@ -22,13 +22,16 @@ func GetRouter() chi.Router {
 
 	// Repositories
 	authRepo := repositories.NewAuthRepository(db)
+	loanRepo := repositories.NewLoanRepository(db)
 
 	// Usecases
 	jwtSecret := viper.GetString("jwt.secret")
 	authUsecase := usecase.NewAuthUsecase(authRepo, jwtSecret)
+	loanUsecase := usecase.NewLoanUsecase(loanRepo)
 
 	// Controllers
 	authController := controller.NewAuthController(authUsecase)
+	loanController := controller.NewLoanController(loanUsecase)
 
 	// Routes
 	r.Get("/__health", controller.GetHealth)
@@ -66,8 +69,7 @@ func GetRouter() chi.Router {
 			// Borrower routes
 			r.Group(func(r chi.Router) {
 				r.Use(middleware.RequireUserType("borrower"))
-				// TODO: Add borrower specific routes
-				// r.Post("/loans", loanController.CreateLoan)
+				r.Post("/loans", loanController.CreateLoanProposal)
 				// r.Get("/loans/{id}", loanController.GetLoanDetails)
 			})
 

@@ -3,6 +3,7 @@ package usecase
 import (
 	"context"
 	"fmt"
+	"github.com/google/uuid"
 	"time"
 
 	"github.com/fajar-andriansyah/loan-engine/models"
@@ -28,7 +29,7 @@ func NewAuthUsecase(authRepo repositories.AuthRepository, jwtSecret string) Auth
 }
 
 func (u *authUsecase) Login(ctx context.Context, req *models.LoginRequest) (*models.LoginResponse, error) {
-	var userID string
+	var userID uuid.UUID
 	var profile interface{}
 	var passwordHash string
 	var role string
@@ -37,27 +38,30 @@ func (u *authUsecase) Login(ctx context.Context, req *models.LoginRequest) (*mod
 	// Get user based on user type
 	switch req.UserType {
 	case "employee":
-		empProfile, hash, err := u.authRepo.GetEmployeeByEmail(ctx, req.Email)
+		id, empProfile, hash, err := u.authRepo.GetEmployeeByEmail(ctx, req.Email)
 		if err != nil {
 			return nil, fmt.Errorf("authentication failed: %w", err)
 		}
+		userID = id
 		profile = empProfile
 		passwordHash = hash
 		role = empProfile.EmployeeRole
 
 	case "borrower":
-		borProfile, hash, err := u.authRepo.GetBorrowerByEmail(ctx, req.Email)
+		id, borProfile, hash, err := u.authRepo.GetBorrowerByEmail(ctx, req.Email)
 		if err != nil {
 			return nil, fmt.Errorf("authentication failed: %w", err)
 		}
+		userID = id
 		profile = borProfile
 		passwordHash = hash
 
 	case "investor":
-		invProfile, hash, err := u.authRepo.GetInvestorByEmail(ctx, req.Email)
+		id, invProfile, hash, err := u.authRepo.GetInvestorByEmail(ctx, req.Email)
 		if err != nil {
 			return nil, fmt.Errorf("authentication failed: %w", err)
 		}
+		userID = id
 		profile = invProfile
 		passwordHash = hash
 
@@ -73,7 +77,7 @@ func (u *authUsecase) Login(ctx context.Context, req *models.LoginRequest) (*mod
 	// Generate JWT token
 	expiresIn := 3600 // 1 hour
 	claims := &models.JWTClaims{
-		UserID:   userID,
+		UserID:   userID.String(), // Convert UUID to string for JWT
 		UserType: req.UserType,
 		Role:     role,
 		RegisteredClaims: jwt.RegisteredClaims{
@@ -93,7 +97,7 @@ func (u *authUsecase) Login(ctx context.Context, req *models.LoginRequest) (*mod
 		TokenType:   "Bearer",
 		ExpiresIn:   expiresIn,
 		User: models.UserInfo{
-			ID:       userID,
+			ID:       userID.String(),
 			UserType: req.UserType,
 			Profile:  profile,
 		},

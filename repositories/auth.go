@@ -11,9 +11,9 @@ import (
 )
 
 type AuthRepository interface {
-	GetEmployeeByEmail(ctx context.Context, email string) (*models.EmployeeProfile, string, error)
-	GetBorrowerByEmail(ctx context.Context, email string) (*models.BorrowerProfile, string, error)
-	GetInvestorByEmail(ctx context.Context, email string) (*models.InvestorProfile, string, error)
+	GetEmployeeByEmail(ctx context.Context, email string) (uuid.UUID, *models.EmployeeProfile, string, error)
+	GetBorrowerByEmail(ctx context.Context, email string) (uuid.UUID, *models.BorrowerProfile, string, error)
+	GetInvestorByEmail(ctx context.Context, email string) (uuid.UUID, *models.InvestorProfile, string, error)
 }
 
 type authRepository struct {
@@ -26,7 +26,7 @@ func NewAuthRepository(db database.Querier) AuthRepository {
 	}
 }
 
-func (r *authRepository) GetEmployeeByEmail(ctx context.Context, email string) (*models.EmployeeProfile, string, error) {
+func (r *authRepository) GetEmployeeByEmail(ctx context.Context, email string) (uuid.UUID, *models.EmployeeProfile, string, error) {
 	query := `
 		SELECT id, username, email, password_hash, full_name, employee_role, department, is_active
 		FROM employees 
@@ -50,15 +50,15 @@ func (r *authRepository) GetEmployeeByEmail(ctx context.Context, email string) (
 
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, "", fmt.Errorf("employee not found")
+			return uuid.Nil, nil, "", fmt.Errorf("employee not found")
 		}
-		return nil, "", fmt.Errorf("failed to get employee: %w", err)
+		return uuid.Nil, nil, "", fmt.Errorf("failed to get employee: %w", err)
 	}
 
-	return &profile, passwordHash, nil
+	return id, &profile, passwordHash, nil
 }
 
-func (r *authRepository) GetBorrowerByEmail(ctx context.Context, email string) (*models.BorrowerProfile, string, error) {
+func (r *authRepository) GetBorrowerByEmail(ctx context.Context, email string) (uuid.UUID, *models.BorrowerProfile, string, error) {
 	query := `
 		SELECT id, full_name, email, phone_number, identity_number, occupation, password_hash
 		FROM borrowers 
@@ -81,15 +81,15 @@ func (r *authRepository) GetBorrowerByEmail(ctx context.Context, email string) (
 
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, "", fmt.Errorf("borrower not found")
+			return uuid.Nil, nil, "", fmt.Errorf("borrower not found")
 		}
-		return nil, "", fmt.Errorf("failed to get borrower: %w", err)
+		return uuid.Nil, nil, "", fmt.Errorf("failed to get borrower: %w", err)
 	}
 
-	return &profile, passwordHash, nil
+	return id, &profile, passwordHash, nil
 }
 
-func (r *authRepository) GetInvestorByEmail(ctx context.Context, email string) (*models.InvestorProfile, string, error) {
+func (r *authRepository) GetInvestorByEmail(ctx context.Context, email string) (uuid.UUID, *models.InvestorProfile, string, error) {
 	query := `
 		SELECT id, full_name, email, phone_number, identity_number, is_active, password_hash
 		FROM investors 
@@ -112,10 +112,10 @@ func (r *authRepository) GetInvestorByEmail(ctx context.Context, email string) (
 
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, "", fmt.Errorf("investor not found")
+			return uuid.Nil, nil, "", fmt.Errorf("investor not found")
 		}
-		return nil, "", fmt.Errorf("failed to get investor: %w", err)
+		return uuid.Nil, nil, "", fmt.Errorf("failed to get investor: %w", err)
 	}
 
-	return &profile, passwordHash, nil
+	return id, &profile, passwordHash, nil
 }
