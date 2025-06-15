@@ -53,8 +53,13 @@ sysLoan((System Loan)) -- borrower --> proposeLoan[Propose Loan]
 Based on use case diagram, below are feature we will provide.
 
 ## Feature List
+### 1. Auth
+**Description**: Authentication & Authorization Users
 
-### 1. Loan Lifecycle Management
+**API:**
+- Login user
+
+### 2. Loan Lifecycle Management
 **Description**: Core loan workflow management from proposal to disbursement.
 
 **API:**
@@ -65,29 +70,29 @@ Based on use case diagram, below are feature we will provide.
 
 ---
 
-### 2. Investment Management
-**Description**: Handle multiple investor investments with real-time aggregation and automatic state transitions.
+### 3. Investment Management
+**Description**: Handle multiple investor investments with aggregation.
 
 **API:**
-- `GET /api/v1/loans/available` - List available loans for investment
-- `POST /api/v1/loans/{id}/investments` - Make investment in loan
-- `GET /api/v1/investors/{investor_id}/portfolio` - Get investor's investment portfolio
+- List available loans for investment
+- Make investment in loan
+- Get investor's investment portfolio
 
 ---
 
-### 3. Document Management
-**Description**: Secure file upload and management for loan-related documents (proofs, agreements, signed contracts).
+### 4. Document Management
+**Description**: upload documents (proofs, agreements, signed contracts).
 
 **API:**
-- `POST /api/v1/files/upload` - Upload document files
-- `GET /api/v1/files/{file_id}` - Download/view document
+- Upload document files
+- Download/view document
 
 ---
 
-### 4. System Health & Monitoring
+### 5. System Health & Monitoring
 **Description**: System health checks and monitoring endpoints for operational visibility.
 
 **API:**
-- `GET /api/v1/health` - Basic health check
+- Basic health check
 
 
