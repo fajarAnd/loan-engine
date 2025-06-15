@@ -14,6 +14,9 @@ type LoanRepository interface {
 	GetLoanForApproval(ctx context.Context, loanID uuid.UUID) (*models.LoanForApproval, error)
 	ApproveLoan(ctx context.Context, loanID, approvingEmployeeID uuid.UUID, approvalNotes, agreementURL string) error
 	GetApprovedLoan(ctx context.Context, loanID uuid.UUID) (*models.ApproveLoanResponse, error)
+	GetLoanForDisbursement(ctx context.Context, loanID uuid.UUID) (*models.Loan, error)
+	DisburseLoan(ctx context.Context, loanID, fieldOfficerID uuid.UUID, signedAgreementURL, disbursementNotes string) error
+	GetDisbursedLoan(ctx context.Context, loanID uuid.UUID) (*models.DisburseLoanResponse, error)
 }
 
 type loanRepository struct {
@@ -176,6 +179,108 @@ func (r *loanRepository) GetApprovedLoan(ctx context.Context, loanID uuid.UUID) 
 	}
 	if surveyDate.Valid {
 		response.SurveyDate = surveyDate.Time.Format("2006-01-02")
+	}
+
+	return &response, nil
+}
+
+func (r *loanRepository) GetLoanForDisbursement(ctx context.Context, loanID uuid.UUID) (*models.Loan, error) {
+	query := `
+		SELECT id, borrower_id, principal_amount, interest_rate, roi_rate,
+		       loan_term_month, current_state, created_at, updated_at
+		FROM loans 
+		WHERE id = $1
+	`
+
+	var loan models.Loan
+	err := r.db.QueryRow(ctx, query, loanID).Scan(
+		&loan.ID,
+		&loan.BorrowerID,
+		&loan.PrincipalAmount,
+		&loan.InterestRate,
+		&loan.ROIRate,
+		&loan.LoanTermMonth,
+		&loan.CurrentState,
+		&loan.CreatedAt,
+		&loan.UpdatedAt,
+	)
+
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, fmt.Errorf("loan not found")
+		}
+		return nil, fmt.Errorf("failed to get loan: %w", err)
+	}
+
+	return &loan, nil
+}
+
+func (r *loanRepository) DisburseLoan(ctx context.Context, loanID, fieldOfficerID uuid.UUID, signedAgreementURL, disbursementNotes string) error {
+	query := `
+		UPDATE loans 
+		SET current_state = 'DISBURSED',
+		    field_officer_employee_id = $2,
+		    disbursement_date = CURRENT_DATE,
+		    signed_agreement_url = $3,
+		    disbursement_notes = $4,
+		    updated_at = CURRENT_TIMESTAMP
+		WHERE id = $1 AND current_state = 'INVESTED'
+	`
+
+	if db, ok := r.db.(database.Executor); ok {
+		result, err := db.Exec(ctx, query, loanID, fieldOfficerID, signedAgreementURL, disbursementNotes)
+		if err != nil {
+			return fmt.Errorf("failed to disburse loan: %w", err)
+		}
+
+		if result.RowsAffected() == 0 {
+			return fmt.Errorf("loan not found or not in invested state")
+		}
+	} else {
+		return fmt.Errorf("database does not support Exec operation")
+	}
+
+	return nil
+}
+
+func (r *loanRepository) GetDisbursedLoan(ctx context.Context, loanID uuid.UUID) (*models.DisburseLoanResponse, error) {
+	query := `
+		SELECT id, borrower_id, principal_amount, interest_rate, roi_rate,
+		       loan_term_month, current_state, disbursement_date, 
+		       field_officer_employee_id, signed_agreement_url, 
+		       disbursement_notes, updated_at
+		FROM loans 
+		WHERE id = $1
+	`
+
+	var response models.DisburseLoanResponse
+	var disbursementDate sql.NullTime
+	var disbursementNotes sql.NullString
+
+	err := r.db.QueryRow(ctx, query, loanID).Scan(
+		&response.ID,
+		&response.BorrowerID,
+		&response.PrincipalAmount,
+		&response.InterestRate,
+		&response.ROIRate,
+		&response.LoanTermMonth,
+		&response.CurrentState,
+		&disbursementDate,
+		&response.FieldOfficerEmployeeID,
+		&response.SignedAgreementURL,
+		&disbursementNotes,
+		&response.UpdatedAt,
+	)
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to get disbursed loan: %w", err)
+	}
+
+	if disbursementDate.Valid {
+		response.DisbursementDate = disbursementDate.Time.Format("2006-01-02")
+	}
+	if disbursementNotes.Valid {
+		response.DisbursementNotes = disbursementNotes.String
 	}
 
 	return &response, nil

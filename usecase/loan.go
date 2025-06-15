@@ -14,6 +14,7 @@ import (
 type LoanUsecase interface {
 	CreateLoanProposal(ctx context.Context, req *models.CreateLoanRequest, borrowerID string) (*models.LoanResponse, error)
 	ApproveLoan(ctx context.Context, loanID string, approvingEmployeeID string, req *models.ApproveLoanRequest) (*models.ApproveLoanResponse, error)
+	DisburseLoan(ctx context.Context, loanID string, fieldOfficerID string, req *models.DisburseLoanRequest, signedAgreementURL string) (*models.DisburseLoanResponse, error)
 }
 
 type loanUsecase struct {
@@ -104,6 +105,43 @@ func (u *loanUsecase) ApproveLoan(ctx context.Context, loanID string, approvingE
 	response, err := u.loanRepo.GetApprovedLoan(ctx, loanUUID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get approved loan data: %w", err)
+	}
+
+	return response, nil
+}
+
+func (u *loanUsecase) DisburseLoan(ctx context.Context, loanID string, fieldOfficerID string, req *models.DisburseLoanRequest, signedAgreementURL string) (*models.DisburseLoanResponse, error) {
+	// Parse UUIDs
+	loanUUID, err := uuid.Parse(loanID)
+	if err != nil {
+		return nil, fmt.Errorf("invalid loan ID")
+	}
+
+	officerUUID, err := uuid.Parse(fieldOfficerID)
+	if err != nil {
+		return nil, fmt.Errorf("invalid officer ID")
+	}
+
+	// Get loan and validate state
+	loan, err := u.loanRepo.GetLoanForDisbursement(ctx, loanUUID)
+	if err != nil {
+		return nil, err
+	}
+
+	if loan.CurrentState != "INVESTED" {
+		return nil, fmt.Errorf("loan must be in invested state")
+	}
+
+	// Disburse the loan
+	err = u.loanRepo.DisburseLoan(ctx, loanUUID, officerUUID, signedAgreementURL, req.DisbursementNotes)
+	if err != nil {
+		return nil, err
+	}
+
+	// Get the disbursed loan data
+	response, err := u.loanRepo.GetDisbursedLoan(ctx, loanUUID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get disbursed loan data: %w", err)
 	}
 
 	return response, nil

@@ -74,7 +74,7 @@ func GetRouter() chi.Router {
 				r.Group(func(r chi.Router) {
 					r.Use(middleware.RequireRole("FIELD_OFFICER"))
 					r.Put("/loans/{id}/approve", loanController.ApproveLoan)
-					// r.Put("/loans/{id}/disburse", loanController.DisburseLoan)
+					r.Put("/loans/{id}/disburse", loanController.DisburseLoan)
 				})
 
 			})
@@ -83,7 +83,6 @@ func GetRouter() chi.Router {
 			r.Group(func(r chi.Router) {
 				r.Use(middleware.RequireUserType("borrower"))
 				r.Post("/loans", loanController.CreateLoanProposal)
-				// r.Get("/loans/{id}", loanController.GetLoanDetails)
 			})
 
 			// Investor routes
