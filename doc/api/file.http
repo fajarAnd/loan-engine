@@ -1,0 +1,252 @@
+###
+# *** LOGIN AS FIELD VALIDATOR FIRST
+POST http://localhost:8080/api/v1/auth/login
+Content-Type: application/json
+
+{
+  "email": "validator@amartha.com",
+  "password": "password123",
+  "user_type": "employee"
+}
+
+> {%
+    client.global.set("validator_token", response.body.data.data.access_token);
+%}
+
+###
+
+# *** CREATE A LOAN FIRST (Login as borrower)
+POST http://localhost:8080/api/v1/auth/login
+Content-Type: application/json
+
+{
+  "email": "siti.peminjam@gmail.com",
+  "password": "password123",
+  "user_type": "borrower"
+}
+
+> {%
+    client.global.set("borrower_token", response.body.data.data.access_token);
+%}
+
+###
+
+# *** CREATE LOAN PROPOSAL
+POST http://localhost:8080/api/v1/loans
+Authorization: Bearer {{borrower_token}}
+Content-Type: application/json
+
+{
+  "principal_amount": 5000000.00,
+  "interest_rate": 10.00,
+  "roi_rate": 8.00,
+  "loan_term_month": 12
+}
+
+> {%
+    client.global.set("loan_id", response.body.data.data.id);
+%}
+
+###
+
+# *** UPLOAD SURVEY DOCUMENT - SUCCESS
+POST http://localhost:8080/api/v1/files/upload
+Authorization: Bearer {{validator_token}}
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="loan_id"
+
+{{loan_id}}
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="survey_date"
+
+2025-06-15
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="survey_notes"
+
+Borrower location verified. Business is operational with good foot traffic. Property ownership confirmed.
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="file"; filename="survey_proof.jpg"
+Content-Type: image/jpeg
+
+[Binary file content - use actual file in real testing]
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+###
+
+# *** UPLOAD SURVEY DOCUMENT - Validation Error (Missing loan_id)
+POST http://localhost:8080/api/v1/files/upload
+Authorization: Bearer {{validator_token}}
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="survey_date"
+
+2025-06-15
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="file"; filename="survey_proof.jpg"
+Content-Type: image/jpeg
+
+[Binary file content]
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+###
+
+# *** UPLOAD SURVEY DOCUMENT - Invalid Date Format
+POST http://localhost:8080/api/v1/files/upload
+Authorization: Bearer {{validator_token}}
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="loan_id"
+
+{{loan_id}}
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="survey_date"
+
+15/06/2025
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="file"; filename="survey_proof.jpg"
+Content-Type: image/jpeg
+
+[Binary file content]
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+###
+
+# *** UPLOAD SURVEY DOCUMENT - No File
+POST http://localhost:8080/api/v1/files/upload
+Authorization: Bearer {{validator_token}}
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="loan_id"
+
+{{loan_id}}
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="survey_date"
+
+2025-06-15
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+###
+
+# *** UPLOAD SURVEY DOCUMENT - Invalid Loan ID
+POST http://localhost:8080/api/v1/files/upload
+Authorization: Bearer {{validator_token}}
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="loan_id"
+
+invalid-uuid-here
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="survey_date"
+
+2025-06-15
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="file"; filename="survey_proof.jpg"
+Content-Type: image/jpeg
+
+[Binary file content]
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+###
+
+# *** UPLOAD SURVEY DOCUMENT - Non-existent Loan
+POST http://localhost:8080/api/v1/files/upload
+Authorization: Bearer {{validator_token}}
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="loan_id"
+
+123e4567-e89b-12d3-a456-426614174999
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="survey_date"
+
+2025-06-15
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="file"; filename="survey_proof.jpg"
+Content-Type: image/jpeg
+
+[Binary file content]
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+###
+
+# *** UPLOAD SURVEY DOCUMENT - Wrong User Type (Try with borrower token)
+POST http://localhost:8080/api/v1/files/upload
+Authorization: Bearer {{borrower_token}}
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="loan_id"
+
+{{loan_id}}
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="survey_date"
+
+2025-06-15
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="file"; filename="survey_proof.jpg"
+Content-Type: image/jpeg
+
+[Binary file content]
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+###
+
+# *** UPLOAD SURVEY DOCUMENT - No Authentication
+POST http://localhost:8080/api/v1/files/upload
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="loan_id"
+
+{{loan_id}}
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="survey_date"
+
+2025-06-15
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="file"; filename="survey_proof.jpg"
+Content-Type: image/jpeg
+
+[Binary file content]
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+###
+
+# *** UPLOAD SURVEY DOCUMENT - Try uploading to already processed loan (should fail after first upload)
+# First, let's try to upload again to the same loan that was already uploaded
+POST http://localhost:8080/api/v1/files/upload
+Authorization: Bearer {{validator_token}}
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="loan_id"
+
+{{loan_id}}
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="survey_date"
+
+2025-06-16
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="survey_notes"
+
+Second attempt upload
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="file"; filename="survey_proof_2.jpg"
+Content-Type: image/jpeg
+
+[Binary file content]
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+###
+
+# *** VIEW UPLOADED FILE (Static file serving test)
+GET http://localhost:8080/uploads/survey_documents/survey_{{loan_id}}_1734250200.jpg
+
+###

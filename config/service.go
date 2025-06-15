@@ -8,8 +8,6 @@ import (
 	"github.com/spf13/viper"
 )
 
-var ServiceVersion = "development"
-
 const defaultPort = 3000
 
 func LoadConfig() error {

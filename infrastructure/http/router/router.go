@@ -1,6 +1,10 @@
 package router
 
 import (
+	"net/http"
+	"path/filepath"
+	"strings"
+
 	"github.com/fajar-andriansyah/loan-engine/controllers"
 	"github.com/fajar-andriansyah/loan-engine/infrastructure/database"
 	"github.com/fajar-andriansyah/loan-engine/infrastructure/http/middleware"
@@ -23,15 +27,23 @@ func GetRouter() chi.Router {
 	// Repositories
 	authRepo := repositories.NewAuthRepository(db)
 	loanRepo := repositories.NewLoanRepository(db)
+	fileRepo := repositories.NewFileRepository(db)
 
 	// Usecases
 	jwtSecret := viper.GetString("jwt.secret")
 	authUsecase := usecase.NewAuthUsecase(authRepo, jwtSecret)
 	loanUsecase := usecase.NewLoanUsecase(loanRepo)
+	fileUsecase := usecase.NewFileUsecase(fileRepo)
 
 	// Controllers
 	authController := controller.NewAuthController(authUsecase)
 	loanController := controller.NewLoanController(loanUsecase)
+	fileController := controller.NewFileController(fileUsecase)
+
+	// Static file serving for uploaded documents
+	workDir, _ := filepath.Abs(".")
+	filesDir := http.Dir(filepath.Join(workDir, "uploads"))
+	FileServer(r, "/uploads", filesDir)
 
 	// Routes
 	r.Get("/__health", controller.GetHealth)
@@ -52,8 +64,7 @@ func GetRouter() chi.Router {
 				// Field validator routes
 				r.Group(func(r chi.Router) {
 					r.Use(middleware.RequireRole("FIELD_VALIDATOR"))
-					// TODO: Add field validator specific routes
-					// r.Post("/loans/{id}/survey", surveyController.UploadSurvey)
+					r.Post("/files/upload", fileController.UploadSurveyDocument)
 				})
 
 				// Field officer routes
@@ -86,4 +97,19 @@ func GetRouter() chi.Router {
 	})
 
 	return r
+}
+
+func FileServer(r chi.Router, path string, root http.FileSystem) {
+	if path != "/" && path[len(path)-1] != '/' {
+		r.Get(path, http.RedirectHandler(path+"/", 301).ServeHTTP)
+		path += "/"
+	}
+	path += "*"
+
+	r.Get(path, func(w http.ResponseWriter, r *http.Request) {
+		rctx := chi.RouteContext(r.Context())
+		pathPrefix := strings.TrimSuffix(rctx.RoutePattern(), "/*")
+		fs := http.StripPrefix(pathPrefix, http.FileServer(root))
+		fs.ServeHTTP(w, r)
+	})
 }

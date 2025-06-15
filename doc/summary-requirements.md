@@ -12,7 +12,7 @@ flowchart TD
 sysLoan((System Loan)) -- borrower --> proposeLoan[Propose Loan]
 
     subgraph State: Propose
-        proposeLoan -- field officer --> sb[Survey Borrower]
+        proposeLoan -- field validator --> sb[Survey Borrower]
         sb --> inputDoc[Input Survey Document]
         inputDoc --> valDoc{Validation Document}
     end
