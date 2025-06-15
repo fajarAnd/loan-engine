@@ -90,13 +90,12 @@ func (u *fileUsecase) UploadSurveyDocument(ctx context.Context, req *models.Uplo
 		return nil, fmt.Errorf("failed to save file: %w", err)
 	}
 
-	// Generate file URL (assuming served from /uploads path)
+	// Generate file URL
+	// TODO: Get location from config
 	fileURL := fmt.Sprintf("/uploads/survey_documents/%s", fileName)
 
-	// Update loan with survey information
 	err = u.fileRepo.UpdateLoanSurveyInfo(ctx, loanUUID, validatorUUID, surveyDate, fileURL, req.SurveyNotes)
 	if err != nil {
-		// Clean up uploaded file on database error
 		os.Remove(filePath)
 		return nil, fmt.Errorf("failed to update loan: %w", err)
 	}
