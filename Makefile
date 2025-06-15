@@ -24,7 +24,7 @@ migrate-version:
 
 migrate-create:
 	@read -p "Enter migration name: " name; \
-	migrate create -ext sql -dir migrations -seq $$name
+	migrate create -ext sql -dir migrations $$name
 
 # Database setup
 db-setup: migrate-up
@@ -35,4 +35,4 @@ db-reset: migrate-down migrate-up
 
 # Install migration tool
 install-migrate:
-	go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@lates
+	go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@latest
