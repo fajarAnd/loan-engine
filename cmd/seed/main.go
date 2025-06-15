@@ -37,6 +37,7 @@ type Investor struct {
 	IsActive       bool      `json:"is_active"`
 	CreatedAt      time.Time `json:"created_at"`
 	UpdatedAt      time.Time `json:"updated_at"`
+	PasswordHash   string    `json:"password_hash"`
 }
 
 type Borrower struct {
@@ -54,6 +55,7 @@ type Borrower struct {
 	AccountHolderName string    `json:"account_holder_name"`
 	CreatedAt         time.Time `json:"created_at"`
 	UpdatedAt         time.Time `json:"updated_at"`
+	PasswordHash      string    `json:"password_hash"`
 }
 
 func main() {
@@ -177,6 +179,7 @@ func seedInvestors(ctx context.Context, db *sql.DB) error {
 			IsActive:       true,
 			CreatedAt:      time.Now(),
 			UpdatedAt:      time.Now(),
+			PasswordHash:   "$2a$10$N9qo8uLOickgx2ZMRZoMye/Lo10Leoj/Th6H82H.urSx7/A0FWwka", // password123
 		},
 		{
 			ID:             uuid.New(),
@@ -189,21 +192,22 @@ func seedInvestors(ctx context.Context, db *sql.DB) error {
 			IsActive:       true,
 			CreatedAt:      time.Now(),
 			UpdatedAt:      time.Now(),
+			PasswordHash:   "$2a$10$N9qo8uLOickgx2ZMRZoMye/Lo10Leoj/Th6H82H.urSx7/A0FWwka", // password123
 		},
 	}
 
 	query := `
 		INSERT INTO investors (
 			id, full_name, identity_number, email, phone_number,
-			address, bank_account, is_active, created_at, updated_at
-		) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+			address, bank_account, is_active, created_at, updated_at, password_hash
+		) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
 		ON CONFLICT (identity_number) DO NOTHING`
 
 	for _, inv := range investors {
 		_, err := db.ExecContext(ctx, query,
 			inv.ID, inv.FullName, inv.IdentityNumber, inv.Email,
 			inv.PhoneNumber, inv.Address, inv.BankAccount,
-			inv.IsActive, inv.CreatedAt, inv.UpdatedAt,
+			inv.IsActive, inv.CreatedAt, inv.UpdatedAt, inv.PasswordHash,
 		)
 		if err != nil {
 			return err
@@ -233,6 +237,7 @@ func seedBorrowers(ctx context.Context, db *sql.DB) error {
 			AccountHolderName: "Siti Peminjam",
 			CreatedAt:         time.Now(),
 			UpdatedAt:         time.Now(),
+			PasswordHash:      "$2a$10$N9qo8uLOickgx2ZMRZoMye/Lo10Leoj/Th6H82H.urSx7/A0FWwka", // password123
 		},
 		{
 			ID:                uuid.New(),
@@ -249,6 +254,7 @@ func seedBorrowers(ctx context.Context, db *sql.DB) error {
 			AccountHolderName: "Joko Wirausaha",
 			CreatedAt:         time.Now(),
 			UpdatedAt:         time.Now(),
+			PasswordHash:      "$2a$10$N9qo8uLOickgx2ZMRZoMye/Lo10Leoj/Th6H82H.urSx7/A0FWwka", // password123
 		},
 	}
 
@@ -256,8 +262,8 @@ func seedBorrowers(ctx context.Context, db *sql.DB) error {
 		INSERT INTO borrowers (
 			id, full_name, identity_number, phone_number, email, address,
 			date_of_birth, occupation, monthly_income, bank_account_number,
-			bank_name, account_holder_name, created_at, updated_at
-		) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
+			bank_name, account_holder_name, created_at, updated_at, password_hash
+		) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
 		ON CONFLICT (identity_number) DO NOTHING`
 
 	for _, borrower := range borrowers {
@@ -266,7 +272,7 @@ func seedBorrowers(ctx context.Context, db *sql.DB) error {
 			borrower.PhoneNumber, borrower.Email, borrower.Address,
 			borrower.DateOfBirth, borrower.Occupation, borrower.MonthlyIncome,
 			borrower.BankAccountNumber, borrower.BankName, borrower.AccountHolderName,
-			borrower.CreatedAt, borrower.UpdatedAt,
+			borrower.CreatedAt, borrower.UpdatedAt, borrower.PasswordHash,
 		)
 		if err != nil {
 			return err
