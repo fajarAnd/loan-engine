@@ -2,6 +2,7 @@ package controller
 
 import (
 	"encoding/json"
+	"github.com/fajar-andriansyah/loan-engine/internal/constants"
 	"net/http"
 	"strings"
 
@@ -70,17 +71,9 @@ func (c *InvestmentController) CreateInvestment(w http.ResponseWriter, r *http.R
 	}
 
 	message := "created successfully"
-	if response.LoanCurrentState == "INVESTED" {
+	if response.LoanCurrentState == constants.INVESTED {
 		message = "Investment created successfully. Loan fully invested!"
 	}
-
-	log.Info().
-		Str("loan_id", loanID).
-		Str("investor_id", user.UserID).
-		Str("investment_id", response.ID.String()).
-		Float64("investment_amount", req.InvestmentAmount).
-		Str("loan_state", response.LoanCurrentState).
-		Msg("Investment created successfully")
 
 	c.sendSuccessResponse(w, http.StatusCreated, message, response)
 }

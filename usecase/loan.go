@@ -3,6 +3,7 @@ package usecase
 import (
 	"context"
 	"fmt"
+	"github.com/fajar-andriansyah/loan-engine/internal/constants"
 	"github.com/fajar-andriansyah/loan-engine/internal/pdf"
 	"time"
 
@@ -43,7 +44,7 @@ func (u *loanUsecase) CreateLoanProposal(ctx context.Context, req *models.Create
 		InterestRate:    req.InterestRate,
 		ROIRate:         req.ROIRate,
 		LoanTermMonth:   req.LoanTermMonth,
-		CurrentState:    "PROPOSED",
+		CurrentState:    constants.PROPOSED,
 		CreatedAt:       now,
 		UpdatedAt:       now,
 	}
@@ -67,7 +68,6 @@ func (u *loanUsecase) CreateLoanProposal(ctx context.Context, req *models.Create
 }
 
 func (u *loanUsecase) ApproveLoan(ctx context.Context, loanID string, approvingEmployeeID string, req *models.ApproveLoanRequest) (*models.ApproveLoanResponse, error) {
-	// Parse UUIDs
 	loanUUID, err := uuid.Parse(loanID)
 	if err != nil {
 		return nil, fmt.Errorf("invalid loan ID")
@@ -78,14 +78,12 @@ func (u *loanUsecase) ApproveLoan(ctx context.Context, loanID string, approvingE
 		return nil, fmt.Errorf("invalid employee ID")
 	}
 
-	// Get loan for approval (includes validation)
 	loan, err := u.loanRepo.GetLoanForApproval(ctx, loanUUID)
 	if err != nil {
 		return nil, err // Repository already handles "loan not found" and "survey not completed"
 	}
 
-	// Check if loan is in correct state
-	if loan.CurrentState != "PROPOSED" {
+	if loan.CurrentState != constants.PROPOSED {
 		return nil, fmt.Errorf("loan must be in proposed state")
 	}
 
@@ -95,13 +93,11 @@ func (u *loanUsecase) ApproveLoan(ctx context.Context, loanID string, approvingE
 		return nil, fmt.Errorf("failed to generate agreement: %w", err)
 	}
 
-	// Approve the loan
 	err = u.loanRepo.ApproveLoan(ctx, loanUUID, employeeUUID, req.ApprovalNotes, agreementURL)
 	if err != nil {
 		return nil, err
 	}
 
-	// Get the approved loan data
 	response, err := u.loanRepo.GetApprovedLoan(ctx, loanUUID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get approved loan data: %w", err)
@@ -111,7 +107,6 @@ func (u *loanUsecase) ApproveLoan(ctx context.Context, loanID string, approvingE
 }
 
 func (u *loanUsecase) DisburseLoan(ctx context.Context, loanID string, fieldOfficerID string, req *models.DisburseLoanRequest, signedAgreementURL string) (*models.DisburseLoanResponse, error) {
-	// Parse UUIDs
 	loanUUID, err := uuid.Parse(loanID)
 	if err != nil {
 		return nil, fmt.Errorf("invalid loan ID")
@@ -122,23 +117,20 @@ func (u *loanUsecase) DisburseLoan(ctx context.Context, loanID string, fieldOffi
 		return nil, fmt.Errorf("invalid officer ID")
 	}
 
-	// Get loan and validate state
 	loan, err := u.loanRepo.GetLoanForDisbursement(ctx, loanUUID)
 	if err != nil {
 		return nil, err
 	}
 
-	if loan.CurrentState != "INVESTED" {
+	if loan.CurrentState != constants.INVESTED {
 		return nil, fmt.Errorf("loan must be in invested state")
 	}
 
-	// Disburse the loan
 	err = u.loanRepo.DisburseLoan(ctx, loanUUID, officerUUID, signedAgreementURL, req.DisbursementNotes)
 	if err != nil {
 		return nil, err
 	}
 
-	// Get the disbursed loan data
 	response, err := u.loanRepo.GetDisbursedLoan(ctx, loanUUID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get disbursed loan data: %w", err)
