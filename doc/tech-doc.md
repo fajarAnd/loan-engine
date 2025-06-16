@@ -1,14 +1,12 @@
 ## 🛠 Tech Stack
 
-### **Backend Framework**
-- **Language**: Go (Golang)
-- **HTTP Framework**: Chi Router (RESTful API)
-- **Design Pattern**: Dependency Injection
-
-### **Database**
-- **Primary DB**: PostgreSQL
-- **ORM**: PGX (v5.7.5) - High-performance PostgreSQL driver
+- **Backend**: Go (Golang) with Chi Router
+- **Database**: PostgreSQL with PGX driver
+- **Authentication**: JWT tokens
+- **PDF Generation**: gofpdf library
 - **Migrations**: golang-migrate
+- **Configuration**: Viper
+- **Logging**: Zerolog
 
 ---
 
