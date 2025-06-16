@@ -1,0 +1,7 @@
+with-expecter: true
+outpkg: mocks
+output: "./mocks"
+packages:
+  "github.com/fajar-andriansyah/loan-engine/repositories":
+    config:
+      all: true

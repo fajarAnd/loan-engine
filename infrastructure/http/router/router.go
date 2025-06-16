@@ -2,6 +2,7 @@ package router
 
 import (
 	"github.com/fajar-andriansyah/loan-engine/internal/constants"
+	"github.com/fajar-andriansyah/loan-engine/internal/pdf"
 	"net/http"
 	"path/filepath"
 	"strings"
@@ -24,6 +25,8 @@ func GetRouter() chi.Router {
 
 	db := database.GetConn()
 
+	pdfGenerator := pdf.NewPDFGenerator()
+
 	// Repositories
 	authRepo := repositories.NewAuthRepository(db)
 	loanRepo := repositories.NewLoanRepository(db)
@@ -33,9 +36,9 @@ func GetRouter() chi.Router {
 	// Usecases
 	jwtSecret := viper.GetString("jwt.secret")
 	authUsecase := usecase.NewAuthUsecase(authRepo, jwtSecret)
-	loanUsecase := usecase.NewLoanUsecase(loanRepo)
+	loanUsecase := usecase.NewLoanUsecase(loanRepo, pdfGenerator)
 	fileUsecase := usecase.NewFileUsecase(fileRepo)
-	investmentUsecase := usecase.NewInvestmentUsecase(investmentRepo)
+	investmentUsecase := usecase.NewInvestmentUsecase(investmentRepo, pdfGenerator)
 
 	// Controllers
 	authController := controller.NewAuthController(authUsecase)
