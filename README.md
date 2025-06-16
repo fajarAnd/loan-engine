@@ -120,9 +120,9 @@ The seeding process creates sample users for testing:
 ### Employees
 | Role | Email | Password | Full Name |
 |------|-------|----------|-----------|
-| **FIELD_VALIDATOR** | `validator@amartha.com` | `password123` | Ahmad Validator |
-| **FIELD_OFFICER** | `officer@amartha.com` | `password123` | Sari Fieldofficer |
-| **ADMIN** | `admin@amartha.com` | `password123` | Budi Administrator |
+| FIELD_VALIDATOR | `validator@amartha.com` | `password123` | Ahmad Validator |
+| FIELD_OFFICER | `officer@amartha.com` | `password123` | Sari Fieldofficer |
+| ADMIN | `admin@amartha.com` | `password123` | Budi Administrator |
 
 ### Investors
 | Email | Password | Full Name |
@@ -175,25 +175,13 @@ flowchart LR
 - [ ] Get investor portfolio (`GET /api/v1/investors/{id}/portfolio`)
 - [ ] Loan status tracking and history
 
-#### 2. **Enhanced Security & Validation**
-- [ ] Rate limiting for API endpoints
-- [ ] Audit trail for all loan state changes
-
-#### 3. **Infrastructure Improvements**
-- [ ] Dockerization for easy deployment
-- [ ] CI/CD pipeline setup
-- [ ] Monitoring and logging enhancements
-
-#### 4. **API Enhancements**
+#### 2. **API Enhancements**
 - [ ] Comprehensive API documentation with Swagger
 
 ### Technical Debt & Improvements
-- [ ] Implement comprehensive error handling
 - [ ] Add & comprehensive unit tests
 - [ ] Optimize database queries
 - [ ] Implement caching layer
-- [ ] Add request/response logging
-- [ ] Enhance configuration management
 - [ ] Implement graceful shutdown
 
 ---
