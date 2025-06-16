@@ -1,6 +1,7 @@
 package router
 
 import (
+	"github.com/fajar-andriansyah/loan-engine/internal/constants"
 	"net/http"
 	"path/filepath"
 	"strings"
@@ -59,17 +60,17 @@ func GetRouter() chi.Router {
 
 			// Employee only routes
 			r.Group(func(r chi.Router) {
-				r.Use(middleware.RequireUserType("employee"))
+				r.Use(middleware.RequireUserType(constants.USER_EMPLOYEE))
 
 				// Field validator routes
 				r.Group(func(r chi.Router) {
-					r.Use(middleware.RequireRole("FIELD_VALIDATOR"))
+					r.Use(middleware.RequireRole(constants.ROLE_FIELD_VALIDATOR))
 					r.Post("/files/upload", fileController.UploadSurveyDocument)
 				})
 
 				// Field officer routes
 				r.Group(func(r chi.Router) {
-					r.Use(middleware.RequireRole("FIELD_OFFICER"))
+					r.Use(middleware.RequireRole(constants.ROLE_FIELD_OFFICER))
 					r.Put("/loans/{id}/approve", loanController.ApproveLoan)
 					r.Put("/loans/{id}/disburse", loanController.DisburseLoan)
 				})
@@ -78,13 +79,13 @@ func GetRouter() chi.Router {
 
 			// Borrower routes
 			r.Group(func(r chi.Router) {
-				r.Use(middleware.RequireUserType("borrower"))
+				r.Use(middleware.RequireUserType(constants.USER_BORROWER))
 				r.Post("/loans", loanController.CreateLoanProposal)
 			})
 
 			// Investor routes
 			r.Group(func(r chi.Router) {
-				r.Use(middleware.RequireUserType("investor"))
+				r.Use(middleware.RequireUserType(constants.USER_INVESTOR))
 				r.Post("/loans/{id}/investments", investmentController.CreateInvestment)
 			})
 		})

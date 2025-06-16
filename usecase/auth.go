@@ -3,6 +3,7 @@ package usecase
 import (
 	"context"
 	"fmt"
+	"github.com/fajar-andriansyah/loan-engine/internal/constants"
 	"github.com/google/uuid"
 	"time"
 
@@ -35,9 +36,8 @@ func (u *authUsecase) Login(ctx context.Context, req *models.LoginRequest) (*mod
 	var role string
 	var err error
 
-	// Get user based on user type
 	switch req.UserType {
-	case "employee":
+	case constants.USER_EMPLOYEE:
 		id, empProfile, hash, err := u.authRepo.GetEmployeeByEmail(ctx, req.Email)
 		if err != nil {
 			return nil, fmt.Errorf("authentication failed: %w", err)
@@ -47,7 +47,7 @@ func (u *authUsecase) Login(ctx context.Context, req *models.LoginRequest) (*mod
 		passwordHash = hash
 		role = empProfile.EmployeeRole
 
-	case "borrower":
+	case constants.USER_BORROWER:
 		id, borProfile, hash, err := u.authRepo.GetBorrowerByEmail(ctx, req.Email)
 		if err != nil {
 			return nil, fmt.Errorf("authentication failed: %w", err)
@@ -56,7 +56,7 @@ func (u *authUsecase) Login(ctx context.Context, req *models.LoginRequest) (*mod
 		profile = borProfile
 		passwordHash = hash
 
-	case "investor":
+	case constants.USER_INVESTOR:
 		id, invProfile, hash, err := u.authRepo.GetInvestorByEmail(ctx, req.Email)
 		if err != nil {
 			return nil, fmt.Errorf("authentication failed: %w", err)
@@ -77,7 +77,7 @@ func (u *authUsecase) Login(ctx context.Context, req *models.LoginRequest) (*mod
 	// Generate JWT token
 	expiresIn := 3600 // 1 hour
 	claims := &models.JWTClaims{
-		UserID:   userID.String(), // Convert UUID to string for JWT
+		UserID:   userID.String(),
 		UserType: req.UserType,
 		Role:     role,
 		RegisteredClaims: jwt.RegisteredClaims{

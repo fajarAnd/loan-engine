@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/fajar-andriansyah/loan-engine/internal/constants"
 	"net/http"
 	"strings"
 
@@ -70,7 +71,7 @@ func RequireRole(roles ...string) func(http.Handler) http.Handler {
 				return
 			}
 
-			if user.UserType != "employee" {
+			if user.UserType != constants.USER_EMPLOYEE {
 				sendForbiddenResponse(w, "Access denied: employee role required")
 				return
 			}
