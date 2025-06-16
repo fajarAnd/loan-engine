@@ -69,3 +69,22 @@ type ApproveLoanResponse struct {
 	SurveyDate               string    `json:"survey_date"`
 	UpdatedAt                time.Time `json:"updated_at"`
 }
+
+type DisburseLoanRequest struct {
+	DisbursementNotes string `form:"disbursement_notes"`
+}
+
+type DisburseLoanResponse struct {
+	ID                     uuid.UUID `json:"id"`
+	BorrowerID             uuid.UUID `json:"borrower_id"`
+	PrincipalAmount        float64   `json:"principal_amount"`
+	InterestRate           float64   `json:"interest_rate"`
+	ROIRate                float64   `json:"roi_rate"`
+	LoanTermMonth          int       `json:"loan_term_month"`
+	CurrentState           string    `json:"current_state"`
+	DisbursementDate       string    `json:"disbursement_date"`
+	FieldOfficerEmployeeID uuid.UUID `json:"field_officer_employee_id"`
+	SignedAgreementURL     string    `json:"signed_agreement_url"`
+	DisbursementNotes      string    `json:"disbursement_notes,omitempty"`
+	UpdatedAt              time.Time `json:"updated_at"`
+}
