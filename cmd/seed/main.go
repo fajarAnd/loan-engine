@@ -3,11 +3,11 @@ package main
 import (
 	"context"
 	"database/sql"
+	database2 "github.com/fajar-andriansyah/loan-engine/internal/app/database"
 	"log"
 	"time"
 
 	"github.com/fajar-andriansyah/loan-engine/config"
-	database2 "github.com/fajar-andriansyah/loan-engine/infrastructure/database"
 	"github.com/google/uuid"
 	"github.com/rs/zerolog"
 )
