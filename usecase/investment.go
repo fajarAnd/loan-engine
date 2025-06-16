@@ -18,11 +18,13 @@ type InvestmentUsecase interface {
 
 type investmentUsecase struct {
 	investmentRepo repositories.InvestmentRepository
+	pdfGenerator   pdf.PDFGenerator
 }
 
-func NewInvestmentUsecase(investmentRepo repositories.InvestmentRepository) InvestmentUsecase {
+func NewInvestmentUsecase(investmentRepo repositories.InvestmentRepository, pdfGenerator pdf.PDFGenerator) InvestmentUsecase {
 	return &investmentUsecase{
 		investmentRepo: investmentRepo,
+		pdfGenerator:   pdfGenerator,
 	}
 }
 
@@ -83,7 +85,7 @@ func (u *investmentUsecase) CreateInvestment(ctx context.Context, loanID, invest
 	}
 
 	// Generate individual investment agreement PDF
-	agreementURL, err := pdf.GenerateInvestmentAgreement(investment, loan, investorName)
+	agreementURL, err := u.pdfGenerator.GenerateInvestmentAgreement(investment, loan, investorName)
 	if err != nil {
 		return nil, fmt.Errorf("failed to generate investment agreement: %w", err)
 	}

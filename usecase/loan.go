@@ -19,12 +19,14 @@ type LoanUsecase interface {
 }
 
 type loanUsecase struct {
-	loanRepo repositories.LoanRepository
+	loanRepo     repositories.LoanRepository
+	pdfGenerator pdf.PDFGenerator
 }
 
-func NewLoanUsecase(loanRepo repositories.LoanRepository) LoanUsecase {
+func NewLoanUsecase(loanRepo repositories.LoanRepository, pdfGenerator pdf.PDFGenerator) LoanUsecase {
 	return &loanUsecase{
-		loanRepo: loanRepo,
+		loanRepo:     loanRepo,
+		pdfGenerator: pdfGenerator,
 	}
 }
 
@@ -88,7 +90,7 @@ func (u *loanUsecase) ApproveLoan(ctx context.Context, loanID string, approvingE
 	}
 
 	// Generate loan agreement PDF
-	agreementURL, err := pdf.GenerateLoanAgreement(loan)
+	agreementURL, err := u.pdfGenerator.GenerateLoanAgreement(loan)
 	if err != nil {
 		return nil, fmt.Errorf("failed to generate agreement: %w", err)
 	}

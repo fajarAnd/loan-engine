@@ -13,7 +13,18 @@ const (
 	URL_PATH_FILE = "uploads/agreements"
 )
 
-func GenerateLoanAgreement(loan *models.LoanForApproval) (string, error) {
+type PDFGenerator interface {
+	GenerateLoanAgreement(loan *models.LoanForApproval) (string, error)
+	GenerateInvestmentAgreement(investment *models.Investment, loan *models.LoanInvestmentInfo, investorName string) (string, error)
+}
+
+type realPDFGenerator struct{}
+
+func NewPDFGenerator() PDFGenerator {
+	return &realPDFGenerator{}
+}
+
+func (r *realPDFGenerator) GenerateLoanAgreement(loan *models.LoanForApproval) (string, error) {
 	agreementDir := "uploads/agreements"
 
 	fileName := fmt.Sprintf("loan_agreement_%s.pdf", loan.ID.String())
@@ -107,7 +118,7 @@ func GenerateLoanAgreement(loan *models.LoanForApproval) (string, error) {
 	return fmt.Sprintf("/%s/%s", URL_PATH_FILE, fileName), nil
 }
 
-func GenerateInvestmentAgreement(investment *models.Investment, loan *models.LoanInvestmentInfo, investorName string) (string, error) {
+func (r *realPDFGenerator) GenerateInvestmentAgreement(investment *models.Investment, loan *models.LoanInvestmentInfo, investorName string) (string, error) {
 	fileName := fmt.Sprintf("investment_agreement_%s_%s.pdf", investment.LoanID.String(), investment.InvestorID.String())
 	filePath := filepath.Join(URL_PATH_FILE, fileName)
 
