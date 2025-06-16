@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 	"github.com/fajar-andriansyah/loan-engine/infrastructure/database"
+	"github.com/fajar-andriansyah/loan-engine/internal/constants"
 	"github.com/fajar-andriansyah/loan-engine/models"
 	"github.com/google/uuid"
 )
@@ -53,8 +54,6 @@ func (r *loanRepository) CreateLoan(ctx context.Context, loan *models.Loan) erro
 		if err != nil {
 			return fmt.Errorf("failed to create loan: %w", err)
 		}
-	} else {
-		return fmt.Errorf("database does not support Exec operation")
 	}
 
 	return nil
@@ -95,7 +94,6 @@ func (r *loanRepository) GetLoanForApproval(ctx context.Context, loanID uuid.UUI
 		return nil, fmt.Errorf("failed to get loan: %w", err)
 	}
 
-	// Check if survey is completed
 	if !validatorID.Valid || !surveyDate.Valid {
 		return nil, fmt.Errorf("survey not completed")
 	}
@@ -109,26 +107,24 @@ func (r *loanRepository) GetLoanForApproval(ctx context.Context, loanID uuid.UUI
 func (r *loanRepository) ApproveLoan(ctx context.Context, loanID, approvingEmployeeID uuid.UUID, approvalNotes, agreementURL string) error {
 	query := `
 		UPDATE loans 
-		SET current_state = 'APPROVED',
+		SET current_state = $5,
 		    approving_employee_id = $2,
 		    approval_date = CURRENT_DATE,
 		    approval_notes = $3,
 		    loan_agreement_pdf_url = $4,
 		    updated_at = CURRENT_TIMESTAMP
-		WHERE id = $1 AND current_state = 'PROPOSED'
+		WHERE id = $1 AND current_state = $6
 	`
 
 	if db, ok := r.db.(database.Executor); ok {
-		result, err := db.Exec(ctx, query, loanID, approvingEmployeeID, approvalNotes, agreementURL)
+		result, err := db.Exec(ctx, query, loanID, approvingEmployeeID, approvalNotes, agreementURL, constants.APPROVED, constants.PROPOSED)
 		if err != nil {
 			return fmt.Errorf("failed to approve loan: %w", err)
 		}
 
 		if result.RowsAffected() == 0 {
-			return fmt.Errorf("loan not found or not in proposed state")
+			return fmt.Errorf("loan not found")
 		}
-	} else {
-		return fmt.Errorf("database does not support Exec operation")
 	}
 
 	return nil
@@ -218,28 +214,25 @@ func (r *loanRepository) GetLoanForDisbursement(ctx context.Context, loanID uuid
 func (r *loanRepository) DisburseLoan(ctx context.Context, loanID, fieldOfficerID uuid.UUID, signedAgreementURL, disbursementNotes string) error {
 	query := `
 		UPDATE loans 
-		SET current_state = 'DISBURSED',
+		SET current_state = $5,
 		    field_officer_employee_id = $2,
 		    disbursement_date = CURRENT_DATE,
 		    signed_agreement_url = $3,
 		    disbursement_notes = $4,
 		    updated_at = CURRENT_TIMESTAMP
-		WHERE id = $1 AND current_state = 'INVESTED'
+		WHERE id = $1 AND current_state = $6
 	`
 
 	if db, ok := r.db.(database.Executor); ok {
-		result, err := db.Exec(ctx, query, loanID, fieldOfficerID, signedAgreementURL, disbursementNotes)
+		result, err := db.Exec(ctx, query, loanID, fieldOfficerID, signedAgreementURL, disbursementNotes, constants.DISBURSED, constants.INVESTED)
 		if err != nil {
 			return fmt.Errorf("failed to disburse loan: %w", err)
 		}
 
 		if result.RowsAffected() == 0 {
-			return fmt.Errorf("loan not found or not in invested state")
+			return fmt.Errorf("loan not found")
 		}
-	} else {
-		return fmt.Errorf("database does not support Exec operation")
 	}
-
 	return nil
 }
 
