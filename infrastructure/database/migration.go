@@ -20,7 +20,6 @@ type Migration struct {
 func NewMigration(db *sql.DB, schema string) (*Migration, error) {
 	config := &postgres.Config{}
 
-	// Set schema for migrations if specified
 	if schema != "" {
 		config.SchemaName = schema
 	}

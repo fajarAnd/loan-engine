@@ -47,7 +47,7 @@ func (c *LoanController) CreateLoanProposal(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	user, err := middleware.GetUserFromContext(r.Context())
+	user, err := middleware.GetUserFromCtx(r.Context())
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to get user from context")
 		c.sendErrorResponse(w, http.StatusUnauthorized, "User context not found", nil)
@@ -92,7 +92,7 @@ func (c *LoanController) ApproveLoan(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, err := middleware.GetUserFromContext(r.Context())
+	user, err := middleware.GetUserFromCtx(r.Context())
 	if err != nil {
 		c.sendErrorResponse(w, http.StatusUnauthorized, "User context not found", nil)
 		return
@@ -202,7 +202,7 @@ func (c *LoanController) DisburseLoan(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, err := middleware.GetUserFromContext(r.Context())
+	user, err := middleware.GetUserFromCtx(r.Context())
 	if err != nil {
 		c.sendErrorResponse(w, http.StatusUnauthorized, "User context not found", nil)
 		return

@@ -67,7 +67,6 @@ func Connect(config *Config) (*sql.DB, error) {
 		return nil, fmt.Errorf("failed to open database connection: %w", err)
 	}
 
-	// Configure connection pool
 	if config.MaxOpenConns > 0 {
 		db.SetMaxOpenConns(config.MaxOpenConns)
 	}
@@ -83,7 +82,6 @@ func Connect(config *Config) (*sql.DB, error) {
 		return nil, fmt.Errorf("failed to ping database: %w", err)
 	}
 
-	// Set search path for the session if schema is specified
 	if config.Schema != "" {
 		_, err := db.Exec(fmt.Sprintf("SET search_path TO %s, public", config.Schema))
 		if err != nil {

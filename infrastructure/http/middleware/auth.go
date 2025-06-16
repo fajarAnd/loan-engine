@@ -17,18 +17,16 @@ type contextKey string
 
 const UserContextKey contextKey = "user"
 
-// JWTAuthMiddleware validates JWT token and adds user info to context
 func JWTAuthMiddleware() func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			// Get token from Authorization header
+
 			authHeader := r.Header.Get("Authorization")
 			if authHeader == "" {
 				sendUnauthorizedResponse(w, "Missing authorization header")
 				return
 			}
 
-			// Check if header starts with "Bearer "
 			tokenParts := strings.Split(authHeader, " ")
 			if len(tokenParts) != 2 || tokenParts[0] != "Bearer" {
 				sendUnauthorizedResponse(w, "Invalid authorization header format")
@@ -37,10 +35,9 @@ func JWTAuthMiddleware() func(http.Handler) http.Handler {
 
 			tokenString := tokenParts[1]
 
-			// Parse and validate token
 			claims := &models.JWTClaims{}
 			token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
-				// Validate signing method
+
 				if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 					return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 				}
@@ -58,14 +55,12 @@ func JWTAuthMiddleware() func(http.Handler) http.Handler {
 				return
 			}
 
-			// Add user info to context
 			ctx := context.WithValue(r.Context(), UserContextKey, claims)
 			next.ServeHTTP(w, r.WithContext(ctx))
 		})
 	}
 }
 
-// RequireRole middleware that checks if user has specific role (for employees)
 func RequireRole(roles ...string) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -75,13 +70,11 @@ func RequireRole(roles ...string) func(http.Handler) http.Handler {
 				return
 			}
 
-			// Check if user is employee (only employees have roles)
 			if user.UserType != "employee" {
 				sendForbiddenResponse(w, "Access denied: employee role required")
 				return
 			}
 
-			// Check if user has required role
 			hasRole := false
 			for _, role := range roles {
 				if user.Role == role {
@@ -100,7 +93,6 @@ func RequireRole(roles ...string) func(http.Handler) http.Handler {
 	}
 }
 
-// RequireUserType middleware that checks if user has specific user type
 func RequireUserType(userTypes ...string) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -110,7 +102,6 @@ func RequireUserType(userTypes ...string) func(http.Handler) http.Handler {
 				return
 			}
 
-			// Check if user has required user type
 			hasUserType := false
 			for _, userType := range userTypes {
 				if user.UserType == userType {
@@ -129,8 +120,7 @@ func RequireUserType(userTypes ...string) func(http.Handler) http.Handler {
 	}
 }
 
-// GetUserFromContext extracts user claims from request context
-func GetUserFromContext(ctx context.Context) (*models.JWTClaims, error) {
+func GetUserFromCtx(ctx context.Context) (*models.JWTClaims, error) {
 	user, ok := ctx.Value(UserContextKey).(*models.JWTClaims)
 	if !ok {
 		return nil, fmt.Errorf("user not found in context")

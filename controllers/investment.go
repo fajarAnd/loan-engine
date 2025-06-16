@@ -27,7 +27,6 @@ func NewInvestmentController(investmentUsecase usecase.InvestmentUsecase) *Inves
 }
 
 func (c *InvestmentController) CreateInvestment(w http.ResponseWriter, r *http.Request) {
-	// Get loan ID from URL parameter
 	loanID := chi.URLParam(r, "id")
 	if loanID == "" {
 		c.sendErrorResponse(w, http.StatusBadRequest, "Loan ID is required", map[string]string{
@@ -36,7 +35,7 @@ func (c *InvestmentController) CreateInvestment(w http.ResponseWriter, r *http.R
 		return
 	}
 
-	user, err := middleware.GetUserFromContext(r.Context())
+	user, err := middleware.GetUserFromCtx(r.Context())
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to get user from context")
 		c.sendErrorResponse(w, http.StatusUnauthorized, "User context not found", nil)
@@ -70,10 +69,9 @@ func (c *InvestmentController) CreateInvestment(w http.ResponseWriter, r *http.R
 		return
 	}
 
-	// Determine response message
-	message := "Investment created successfully"
+	message := "created successfully"
 	if response.LoanCurrentState == "INVESTED" {
-		message = "Investment created successfully. Loan is now fully invested!"
+		message = "Investment created successfully. Loan fully invested!"
 	}
 
 	log.Info().
