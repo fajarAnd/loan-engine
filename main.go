@@ -1,13 +1,13 @@
 package main
 
 import (
+	db "github.com/fajar-andriansyah/loan-engine/internal/app/database"
+	"github.com/fajar-andriansyah/loan-engine/internal/app/router"
 	"github.com/spf13/viper"
 	"net/http"
 	"os"
 
 	"github.com/fajar-andriansyah/loan-engine/config"
-	db "github.com/fajar-andriansyah/loan-engine/infrastructure/database"
-	"github.com/fajar-andriansyah/loan-engine/infrastructure/http/router"
 	"github.com/rs/zerolog/log"
 )
 

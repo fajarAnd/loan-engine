@@ -9,9 +9,6 @@ run:
 	@echo "$(GREEN)Running application...$(NC)"
 	go run main.go
 
-wire:
-	wire gen github.com/go-bonapp/splitbillservice/infrastructure/http/router
-
 # Database migration targets
 migrate-up:
 	go run cmd/migrate/main.go -action=up

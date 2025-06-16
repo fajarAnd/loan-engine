@@ -141,14 +141,14 @@ The seeding process creates sample users for testing:
 ## How to Test
 
 ### 1. API Testing
-Use the provided HTTP test files in the `doc/api/` directory:
+Use the provided HTTP test files in the `api/` directory:
 
-- **Authentication**: `doc/api/auth.http`
-- **Loan Management**: `doc/api/loan.http`
-- **File Upload**: `doc/api/file.http`
-- **Loan Approval**: `doc/api/approve_loan.http`
-- **Investment**: `doc/api/investment.http`
-- **Disbursement**: `doc/api/disburse_loan.http`
+- **Authentication**: `api/auth.http`
+- **Loan Management**: `api/loan.http`
+- **File Upload**: `api/file.http`
+- **Loan Approval**: `api/approve_loan.http`
+- **Investment**: `api/investment.http`
+- **Disbursement**: `api/disburse_loan.http`
 
 ### 2. Complete E2E Workflow Test
 
