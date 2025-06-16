@@ -164,37 +164,6 @@ flowchart LR
     MakeInvestment --> DisburseLoan[9. Disburse Loan]
 ```
 
-
-
----
-
-## 📁 Project Structure
-
-- Loan Engine/
-  - cmd/
-    - migrate/ `migration commands`
-    - seed/ `Database seeding`
-  - config/ `Configuration management`
-  - controllers/ `HTTP request handlers`
-  - doc/
-    - api/ `API Test Files`
-    - diagram/ `Documentation diagram`
-  - infrastructure/
-    - database/ `Database Connection & Interfaces`
-    - http/ `HTTP routing & middleware`
-  - internal/
-    - helpers/ `Utility functions`
-    - pdf/ `PDF generation`
-  - migrations/ `Database Migration Files`
-  - models/ `Data models`
-  - repositories/ `Data access layer`
-  - usecase/ `Business logic layer`
-  - uploads/ `File storage directory`
-  - main.go `Application entry point`
-  - Makefile `Makefile`
-  - config.example.yml `Sample config Application`
-
-
 ---
 
 ## What's Next
@@ -220,7 +189,7 @@ flowchart LR
 
 ### Technical Debt & Improvements
 - [ ] Implement comprehensive error handling
-- [ ] Add unit tests
+- [ ] Add & comprehensive unit tests
 - [ ] Optimize database queries
 - [ ] Implement caching layer
 - [ ] Add request/response logging
