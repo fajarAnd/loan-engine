@@ -4,18 +4,19 @@ import (
 	"context"
 	"testing"
 
-	"github.com/fajar-andriansyah/loan-engine/mocks/repositories"
+	mocksPdf "github.com/fajar-andriansyah/loan-engine/mocks/pdf"
+	mocksRepo "github.com/fajar-andriansyah/loan-engine/mocks/repositories"
 	"github.com/fajar-andriansyah/loan-engine/models"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
 
-// Test Business Logic: First Investment State Transition (APPROVED -> FUNDING)
+// State Transition (APPROVED -> FUNDING)
 func TestCreateInvestment_FirstInvestmentTransitionsToFunding(t *testing.T) {
-	// Arrange
-	mockRepo := mocks.NewInvestmentRepository(t)
-	investmentUsecase := NewInvestmentUsecase(mockRepo)
+	mockRepo := mocksRepo.NewInvestmentRepository(t)
+	mockPdfGen := mocksPdf.NewPDFGenerator(t)
+	investmentUsecase := NewInvestmentUsecase(mockRepo, mockPdfGen)
 
 	loanID := uuid.New()
 	investorID := uuid.New()
@@ -24,7 +25,6 @@ func TestCreateInvestment_FirstInvestmentTransitionsToFunding(t *testing.T) {
 		InvestmentAmount: 2000000, // First investment
 	}
 
-	// Mock loan in APPROVED state with no investments
 	loanInfo := &models.LoanInvestmentInfo{
 		ID:              loanID,
 		PrincipalAmount: 5000000,
@@ -37,24 +37,28 @@ func TestCreateInvestment_FirstInvestmentTransitionsToFunding(t *testing.T) {
 	mockRepo.On("CheckExistingInvestment", mock.Anything, loanID, investorID).Return(false, nil)
 	mockRepo.On("GetInvestorName", mock.Anything, investorID).Return("Test Investor", nil)
 	mockRepo.On("CreateInvestment", mock.Anything, mock.AnythingOfType("*models.Investment")).Return(nil)
-	// Critical: State must transition to FUNDING on first investment
+
+	mockPdfGen.On("GenerateInvestmentAgreement",
+		mock.AnythingOfType("*models.Investment"),
+		mock.AnythingOfType("*models.LoanInvestmentInfo"),
+		"Test Investor").Return("/uploads/agreements/investment_agreement.pdf", nil)
+
 	mockRepo.On("UpdateLoanState", mock.Anything, loanID, "FUNDING").Return(nil)
 
-	// Act
 	result, err := investmentUsecase.CreateInvestment(context.Background(), loanID.String(), investorID.String(), req)
 
-	// Assert - Critical business rule: First investment triggers FUNDING state
 	assert.NoError(t, err)
 	assert.Equal(t, "FUNDING", result.LoanCurrentState)
 	assert.Equal(t, float64(2000000), result.TotalInvestedAmount)
 	assert.Equal(t, float64(3000000), result.RemainingAmount) // 5M - 2M = 3M
+	assert.Equal(t, "/uploads/agreements/investment_agreement.pdf", result.AgreementURL)
 }
 
-// Test Business Logic: Full Investment State Transition (FUNDING -> INVESTED)
+// State Transition (FUNDING -> INVESTED)
 func TestCreateInvestment_FullInvestmentTransitionsToInvested(t *testing.T) {
-	// Arrange
-	mockRepo := mocks.NewInvestmentRepository(t)
-	investmentUsecase := NewInvestmentUsecase(mockRepo)
+	mockRepo := mocksRepo.NewInvestmentRepository(t)
+	mockPdfGen := mocksPdf.NewPDFGenerator(t)
+	investmentUsecase := NewInvestmentUsecase(mockRepo, mockPdfGen)
 
 	loanID := uuid.New()
 	investorID := uuid.New()
@@ -63,7 +67,6 @@ func TestCreateInvestment_FullInvestmentTransitionsToInvested(t *testing.T) {
 		InvestmentAmount: 2000000, // This completes the funding
 	}
 
-	// Mock loan in FUNDING state with partial investment
 	loanInfo := &models.LoanInvestmentInfo{
 		ID:              loanID,
 		PrincipalAmount: 5000000,
@@ -76,24 +79,26 @@ func TestCreateInvestment_FullInvestmentTransitionsToInvested(t *testing.T) {
 	mockRepo.On("CheckExistingInvestment", mock.Anything, loanID, investorID).Return(false, nil)
 	mockRepo.On("GetInvestorName", mock.Anything, investorID).Return("Test Investor", nil)
 	mockRepo.On("CreateInvestment", mock.Anything, mock.AnythingOfType("*models.Investment")).Return(nil)
-	// Critical: State must transition to INVESTED when fully funded
+
+	mockPdfGen.On("GenerateInvestmentAgreement",
+		mock.AnythingOfType("*models.Investment"),
+		mock.AnythingOfType("*models.LoanInvestmentInfo"),
+		"Test Investor").Return("/uploads/agreements/investment_agreement.pdf", nil)
+
 	mockRepo.On("UpdateLoanState", mock.Anything, loanID, "INVESTED").Return(nil)
 
-	// Act
 	result, err := investmentUsecase.CreateInvestment(context.Background(), loanID.String(), investorID.String(), req)
 
-	// Assert - Critical business rule: Full funding triggers INVESTED state
 	assert.NoError(t, err)
 	assert.Equal(t, "INVESTED", result.LoanCurrentState)
 	assert.Equal(t, float64(5000000), result.TotalInvestedAmount) // Fully funded
 	assert.Equal(t, float64(0), result.RemainingAmount)           // No remaining amount
 }
 
-// Test Business Logic: ROI Calculation
-func TestCreateInvestment_ROICalculationAccuracy(t *testing.T) {
-	// Arrange
-	mockRepo := mocks.NewInvestmentRepository(t)
-	investmentUsecase := NewInvestmentUsecase(mockRepo)
+func TestCreateInvestment_ROICalculation(t *testing.T) {
+	mockRepo := mocksRepo.NewInvestmentRepository(t)
+	mockPdfGen := mocksPdf.NewPDFGenerator(t)
+	investmentUsecase := NewInvestmentUsecase(mockRepo, mockPdfGen)
 
 	loanID := uuid.New()
 	investorID := uuid.New()
@@ -113,32 +118,35 @@ func TestCreateInvestment_ROICalculationAccuracy(t *testing.T) {
 	mockRepo.On("GetLoanForInvestment", mock.Anything, loanID).Return(loanInfo, nil)
 	mockRepo.On("CheckExistingInvestment", mock.Anything, loanID, investorID).Return(false, nil)
 	mockRepo.On("GetInvestorName", mock.Anything, investorID).Return("Test Investor", nil)
+
 	mockRepo.On("CreateInvestment", mock.Anything, mock.MatchedBy(func(investment *models.Investment) bool {
-		// Critical: Expected return must be calculated correctly
-		expectedReturn := 1000000 * 0.12 // 1M * 12% = 120K
+		expectedReturn := float64(1000000) * (float64(12) / 100) // 1M * 12% = 120K
 		return investment.ExpectedReturn == expectedReturn
 	})).Return(nil)
+
+	mockPdfGen.On("GenerateInvestmentAgreement",
+		mock.AnythingOfType("*models.Investment"),
+		mock.AnythingOfType("*models.LoanInvestmentInfo"),
+		"Test Investor").Return("/uploads/agreements/investment_agreement.pdf", nil)
+
 	mockRepo.On("UpdateLoanState", mock.Anything, loanID, "FUNDING").Return(nil)
 
-	// Act
 	result, err := investmentUsecase.CreateInvestment(context.Background(), loanID.String(), investorID.String(), req)
 
-	// Assert - Critical business rule: ROI calculation must be accurate
 	assert.NoError(t, err)
-	assert.Equal(t, float64(120000), result.ExpectedReturn) // 1M * 12% = 120K
+	assert.Equal(t, float64(120000), result.ExpectedReturn)
 }
 
-// Test Business Logic: Investment Amount Validation
 func TestCreateInvestment_PreventOverInvestment(t *testing.T) {
-	// Arrange
-	mockRepo := mocks.NewInvestmentRepository(t)
-	investmentUsecase := NewInvestmentUsecase(mockRepo)
+	mockRepo := mocksRepo.NewInvestmentRepository(t)
+	mockPdfGen := mocksPdf.NewPDFGenerator(t)
+	investmentUsecase := NewInvestmentUsecase(mockRepo, mockPdfGen)
 
 	loanID := uuid.New()
 	investorID := uuid.New()
 
 	req := &models.CreateInvestmentRequest{
-		InvestmentAmount: 3000000, // Exceeds remaining 2M
+		InvestmentAmount: 3000000,
 	}
 
 	loanInfo := &models.LoanInvestmentInfo{
@@ -146,26 +154,23 @@ func TestCreateInvestment_PreventOverInvestment(t *testing.T) {
 		PrincipalAmount: 5000000,
 		ROIRate:         8,
 		CurrentState:    "FUNDING",
-		TotalInvested:   3000000, // Only 2M remaining
+		TotalInvested:   3000000,
 	}
 
 	mockRepo.On("GetLoanForInvestment", mock.Anything, loanID).Return(loanInfo, nil)
 	mockRepo.On("CheckExistingInvestment", mock.Anything, loanID, investorID).Return(false, nil)
 
-	// Act
 	result, err := investmentUsecase.CreateInvestment(context.Background(), loanID.String(), investorID.String(), req)
 
-	// Assert - Critical business rule: Cannot exceed principal amount
 	assert.Error(t, err)
 	assert.Nil(t, result)
 	assert.Contains(t, err.Error(), "investment amount exceeds remaining loan amount")
 }
 
-// Test Business Logic: Duplicate Investment Prevention
 func TestCreateInvestment_PreventDuplicateInvestment(t *testing.T) {
-	// Arrange
-	mockRepo := mocks.NewInvestmentRepository(t)
-	investmentUsecase := NewInvestmentUsecase(mockRepo)
+	mockRepo := mocksRepo.NewInvestmentRepository(t)
+	mockPdfGen := mocksPdf.NewPDFGenerator(t)
+	investmentUsecase := NewInvestmentUsecase(mockRepo, mockPdfGen)
 
 	loanID := uuid.New()
 	investorID := uuid.New()
@@ -183,23 +188,19 @@ func TestCreateInvestment_PreventDuplicateInvestment(t *testing.T) {
 	}
 
 	mockRepo.On("GetLoanForInvestment", mock.Anything, loanID).Return(loanInfo, nil)
-	// Critical: Check returns true (investor already invested)
 	mockRepo.On("CheckExistingInvestment", mock.Anything, loanID, investorID).Return(true, nil)
 
-	// Act
 	result, err := investmentUsecase.CreateInvestment(context.Background(), loanID.String(), investorID.String(), req)
 
-	// Assert - Critical business rule: One investment per investor per loan
 	assert.Error(t, err)
 	assert.Nil(t, result)
 	assert.Contains(t, err.Error(), "investor has already invested in this loan")
 }
 
-// Test Business Logic: Investment State Validation
 func TestCreateInvestment_RequiresApprovedOrFundingState(t *testing.T) {
-	// Arrange
-	mockRepo := mocks.NewInvestmentRepository(t)
-	investmentUsecase := NewInvestmentUsecase(mockRepo)
+	mockRepo := mocksRepo.NewInvestmentRepository(t)
+	mockPdfGen := mocksPdf.NewPDFGenerator(t)
+	investmentUsecase := NewInvestmentUsecase(mockRepo, mockPdfGen)
 
 	loanID := uuid.New()
 	investorID := uuid.New()
@@ -208,7 +209,6 @@ func TestCreateInvestment_RequiresApprovedOrFundingState(t *testing.T) {
 		InvestmentAmount: 2000000,
 	}
 
-	// Test with PROPOSED state (invalid)
 	loanInfo := &models.LoanInvestmentInfo{
 		ID:              loanID,
 		PrincipalAmount: 5000000,
@@ -219,26 +219,22 @@ func TestCreateInvestment_RequiresApprovedOrFundingState(t *testing.T) {
 
 	mockRepo.On("GetLoanForInvestment", mock.Anything, loanID).Return(loanInfo, nil)
 
-	// Act
 	result, err := investmentUsecase.CreateInvestment(context.Background(), loanID.String(), investorID.String(), req)
 
-	// Assert - Critical business rule: Only APPROVED or FUNDING loans can receive investments
 	assert.Error(t, err)
 	assert.Nil(t, result)
 	assert.Contains(t, err.Error(), "loan must be in APPROVED or FUNDING state")
 }
 
-// Test Business Logic: Invalid UUID Validation
 func TestCreateInvestment_InvalidUUIDs(t *testing.T) {
-	// Arrange
-	mockRepo := mocks.NewInvestmentRepository(t)
-	investmentUsecase := NewInvestmentUsecase(mockRepo)
+	mockRepo := mocksRepo.NewInvestmentRepository(t)
+	mockPdfGen := mocksPdf.NewPDFGenerator(t)
+	investmentUsecase := NewInvestmentUsecase(mockRepo, mockPdfGen)
 
 	req := &models.CreateInvestmentRequest{
 		InvestmentAmount: 2000000,
 	}
 
-	// Test invalid loan ID
 	result, err := investmentUsecase.CreateInvestment(context.Background(), "invalid-loan-id", uuid.New().String(), req)
 	assert.Error(t, err)
 	assert.Nil(t, result)

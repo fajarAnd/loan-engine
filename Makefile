@@ -2,8 +2,12 @@ SERVICE_NAME=loan-service
 
 
 test:
+	@echo "$(GREEN)Running all tests...$(NC)"
 	go test ./... -cover
 
+run:
+	@echo "$(GREEN)Running application...$(NC)"
+	go run main.go
 
 wire:
 	wire gen github.com/go-bonapp/splitbillservice/infrastructure/http/router

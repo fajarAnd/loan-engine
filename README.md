@@ -93,16 +93,23 @@ go build -o loan-engine main.go
 ### 6. Run Application
 directly with Go:
 ```bash
-go run main.go
+make run
 ```
 
-The server will start on `http://localhost:8080`
-
-### Health Check
+#### Health Check
 Verify the application is running:
 ```bash
 curl http://localhost:8080/__health
 ```
+
+The server will start on `http://localhost:8080`
+
+
+### 7. Run Unit Test
+```bash
+go run main.go
+```
+
 
 ---
 
