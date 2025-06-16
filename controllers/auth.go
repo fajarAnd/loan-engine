@@ -26,22 +26,19 @@ func NewAuthController(authUsecase usecase.AuthUsecase) *AuthController {
 func (c *AuthController) Login(w http.ResponseWriter, r *http.Request) {
 	var req models.LoginRequest
 
-	// Parse request body
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		log.Error().Err(err).Msg("Failed to decode request body")
 		c.sendErrorResponse(w, http.StatusBadRequest, "Invalid request body", nil)
 		return
 	}
 
-	// Validate request
 	if err := c.validator.Struct(&req); err != nil {
 		log.Error().Err(err).Msg("Validation failed")
 		c.sendValidationErrorResponse(w, err)
 		return
 	}
 
-	// Process login
-	response, err := c.authUsecase.Login(r.Context(), &req)
+	resp, err := c.authUsecase.Login(r.Context(), &req)
 	if err != nil {
 		log.Error().Err(err).Str("email", req.Email).Str("user_type", req.UserType).Msg("Login failed")
 
@@ -59,14 +56,14 @@ func (c *AuthController) Login(w http.ResponseWriter, r *http.Request) {
 	}
 
 	log.Info().Str("email", req.Email).Str("user_type", req.UserType).Msg("Login successful")
-	c.sendSuccessResponse(w, http.StatusOK, "Login successful", response)
+	c.sendSuccessResponse(w, http.StatusOK, "Login successful", resp)
 }
 
 func (c *AuthController) sendSuccessResponse(w http.ResponseWriter, statusCode int, message string, data interface{}) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(statusCode)
 
-	response := models.Response[interface{}]{
+	resp := models.Response[interface{}]{
 		Data: map[string]interface{}{
 			"success": true,
 			"message": message,
@@ -74,7 +71,7 @@ func (c *AuthController) sendSuccessResponse(w http.ResponseWriter, statusCode i
 		},
 	}
 
-	json.NewEncoder(w).Encode(response)
+	json.NewEncoder(w).Encode(resp)
 }
 
 func (c *AuthController) sendErrorResponse(w http.ResponseWriter, statusCode int, message string, extra map[string]string) {

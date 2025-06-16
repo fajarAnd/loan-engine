@@ -3,6 +3,7 @@ package usecase
 import (
 	"context"
 	"fmt"
+	"github.com/fajar-andriansyah/loan-engine/internal/constants"
 	"time"
 
 	"github.com/fajar-andriansyah/loan-engine/internal/pdf"
@@ -26,7 +27,6 @@ func NewInvestmentUsecase(investmentRepo repositories.InvestmentRepository) Inve
 }
 
 func (u *investmentUsecase) CreateInvestment(ctx context.Context, loanID, investorID string, req *models.CreateInvestmentRequest) (*models.InvestmentResponse, error) {
-	// Parse UUIDs
 	loanUUID, err := uuid.Parse(loanID)
 	if err != nil {
 		return nil, fmt.Errorf("invalid loan ID")
@@ -37,18 +37,15 @@ func (u *investmentUsecase) CreateInvestment(ctx context.Context, loanID, invest
 		return nil, fmt.Errorf("invalid investor ID")
 	}
 
-	// Get loan information
 	loan, err := u.investmentRepo.GetLoanForInvestment(ctx, loanUUID)
 	if err != nil {
 		return nil, err
 	}
 
-	// Check loan state (must be APPROVED or FUNDING)
-	if loan.CurrentState != "APPROVED" && loan.CurrentState != "FUNDING" {
+	if loan.CurrentState != constants.APPROVED && loan.CurrentState != constants.FUNDING {
 		return nil, fmt.Errorf("loan must be in APPROVED or FUNDING state")
 	}
 
-	// Check if investor already invested in this loan
 	exists, err := u.investmentRepo.CheckExistingInvestment(ctx, loanUUID, investorUUID)
 	if err != nil {
 		return nil, err
@@ -57,24 +54,18 @@ func (u *investmentUsecase) CreateInvestment(ctx context.Context, loanID, invest
 		return nil, fmt.Errorf("investor has already invested in this loan")
 	}
 
-	// Calculate remaining amount
 	remainingAmount := loan.PrincipalAmount - loan.TotalInvested
-
-	// Check if investment amount exceeds remaining
 	if req.InvestmentAmount > remainingAmount {
 		return nil, fmt.Errorf("investment amount exceeds remaining loan amount")
 	}
 
-	// Calculate expected return based on ROI rate
 	expectedReturn := req.InvestmentAmount * (loan.ROIRate / 100)
 
-	// Get investor name for agreement
 	investorName, err := u.investmentRepo.GetInvestorName(ctx, investorUUID)
 	if err != nil {
 		return nil, err
 	}
 
-	// Create investment
 	now := time.Now()
 	investment := &models.Investment{
 		ID:               uuid.New(),
@@ -97,25 +88,21 @@ func (u *investmentUsecase) CreateInvestment(ctx context.Context, loanID, invest
 		return nil, fmt.Errorf("failed to generate investment agreement: %w", err)
 	}
 
-	// Calculate new totals
 	newTotalInvested := loan.TotalInvested + req.InvestmentAmount
 	newRemainingAmount := loan.PrincipalAmount - newTotalInvested
 
-	// Update loan state based on funding status
 	var newState string
 
 	if newRemainingAmount == 0 {
-		// Fully funded - transition to INVESTED
-		newState = "INVESTED"
-	} else if loan.CurrentState == "APPROVED" {
+		// Loan = principal - move to invested
+		newState = constants.INVESTED
+	} else if loan.CurrentState == constants.APPROVED {
 		// First investment - transition to FUNDING
-		newState = "FUNDING"
+		newState = constants.FUNDING
 	} else {
-		// Already in FUNDING, stay in FUNDING
-		newState = "FUNDING"
+		newState = constants.FUNDING
 	}
 
-	// Update loan state if changed
 	if newState != loan.CurrentState {
 		err = u.investmentRepo.UpdateLoanState(ctx, loanUUID, newState)
 		if err != nil {
@@ -123,7 +110,6 @@ func (u *investmentUsecase) CreateInvestment(ctx context.Context, loanID, invest
 		}
 	}
 
-	// Prepare response
 	response := &models.InvestmentResponse{
 		ID:                  investment.ID,
 		LoanID:              investment.LoanID,

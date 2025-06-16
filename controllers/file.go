@@ -24,24 +24,13 @@ func NewFileController(fileUsecase usecase.FileUsecase) *FileController {
 }
 
 func (c *FileController) UploadSurveyDocument(w http.ResponseWriter, r *http.Request) {
-	// Parse multipart form (max 10MB)
-	err := r.ParseMultipartForm(10 << 20)
-	if err != nil {
-		log.Error().Err(err).Msg("Failed to parse multipart form")
-		c.sendErrorResponse(w, http.StatusBadRequest, "Invalid form data", map[string]string{
-			"error_code": "INVALID_FORM_DATA",
-		})
-		return
-	}
-
-	user, err := middleware.GetUserFromContext(r.Context())
+	user, err := middleware.GetUserFromCtx(r.Context())
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to get user from context")
 		c.sendErrorResponse(w, http.StatusUnauthorized, "User context not found", nil)
 		return
 	}
 
-	// Get file from form
 	file, header, err := r.FormFile("file")
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to get file from form")

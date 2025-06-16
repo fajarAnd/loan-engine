@@ -1,9 +1,7 @@
-// internal/pdf/generator.go
 package pdf
 
 import (
 	"fmt"
-	"os"
 	"path/filepath"
 	"time"
 
@@ -11,22 +9,19 @@ import (
 	"github.com/jung-kurt/gofpdf"
 )
 
-func GenerateLoanAgreement(loan *models.LoanForApproval) (string, error) {
-	// Create agreements directory if not exists
-	agreementDir := "uploads/agreements"
-	if err := os.MkdirAll(agreementDir, 0755); err != nil {
-		return "", fmt.Errorf("failed to create agreement directory: %w", err)
-	}
+const (
+	URL_PATH_FILE = "uploads/agreements"
+)
 
-	// Generate filename
+func GenerateLoanAgreement(loan *models.LoanForApproval) (string, error) {
+	agreementDir := "uploads/agreements"
+
 	fileName := fmt.Sprintf("loan_agreement_%s.pdf", loan.ID.String())
 	filePath := filepath.Join(agreementDir, fileName)
 
-	// Calculate total payment
 	totalAmount := loan.PrincipalAmount * (1 + loan.InterestRate/100)
 	monthlyPayment := totalAmount / float64(loan.LoanTermMonth)
 
-	// Create PDF
 	pdf := gofpdf.New("P", "mm", "A4", "")
 	pdf.AddPage()
 
@@ -104,33 +99,23 @@ func GenerateLoanAgreement(loan *models.LoanForApproval) (string, error) {
 	pdf.Cell(90, 8, "Borrower Signature")
 	pdf.Cell(90, 8, "Amartha Representative")
 
-	// Save PDF
 	err := pdf.OutputFileAndClose(filePath)
 	if err != nil {
 		return "", fmt.Errorf("failed to generate PDF: %w", err)
 	}
 
-	// Return URL path
-	return fmt.Sprintf("/uploads/agreements/%s", fileName), nil
+	return fmt.Sprintf("/%s/%s", URL_PATH_FILE, fileName), nil
 }
 
 func GenerateInvestmentAgreement(investment *models.Investment, loan *models.LoanInvestmentInfo, investorName string) (string, error) {
-	// Create agreements directory if not exists
-	agreementDir := "uploads/agreements"
-	if err := os.MkdirAll(agreementDir, 0755); err != nil {
-		return "", fmt.Errorf("failed to create agreement directory: %w", err)
-	}
-
-	// Generate filename
 	fileName := fmt.Sprintf("investment_agreement_%s_%s.pdf", investment.LoanID.String(), investment.InvestorID.String())
-	filePath := filepath.Join(agreementDir, fileName)
+	filePath := filepath.Join(URL_PATH_FILE, fileName)
 
-	// Calculate return details
+	// TODO: check this
 	investmentPeriod := 12 // months (could be from loan data)
 	totalReturn := investment.InvestmentAmount + investment.ExpectedReturn
 	monthlyReturn := totalReturn / float64(investmentPeriod)
 
-	// Create PDF
 	pdf := gofpdf.New("P", "mm", "A4", "")
 	pdf.AddPage()
 
@@ -205,12 +190,10 @@ func GenerateInvestmentAgreement(investment *models.Investment, loan *models.Loa
 	pdf.Cell(90, 8, "Investor Signature")
 	pdf.Cell(90, 8, "Amartha Representative")
 
-	// Save PDF
 	err := pdf.OutputFileAndClose(filePath)
 	if err != nil {
 		return "", fmt.Errorf("failed to generate PDF: %w", err)
 	}
 
-	// Return URL path
-	return fmt.Sprintf("/uploads/agreements/%s", fileName), nil
+	return fmt.Sprintf("/%s/%s", URL_PATH_FILE, fileName), nil
 }

@@ -1,4 +1,4 @@
-# Loan Engine - 📋 Summary Requirements
+# Loan Engine - Summary Requirements
 ## Core Business Rules
 - **State Flow**: `proposed` → `approved` → `invested` → `disbursed`
 - **Forward-only movement**: No backward state transitions allowed

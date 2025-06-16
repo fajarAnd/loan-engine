@@ -1,0 +1,9 @@
+package constants
+
+const (
+	PROPOSED  = "PROPOSED"
+	APPROVED  = "APPROVED"
+	FUNDING   = "FUNDING"
+	INVESTED  = "INVESTED"
+	DISBURSED = "DISBURSED"
+)

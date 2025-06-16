@@ -14,7 +14,6 @@ import (
 func main() {
 	_ = config.LoadConfig()
 
-	// Get port dari environment atau default ke 8080
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "8080"
@@ -23,12 +22,12 @@ func main() {
 	if err := db.InitDB(viper.GetString("database.dsn")); err != nil {
 		log.Warn().Err(err).Msg("")
 	}
-	// Setup routes
+
 	router := router.GetRouter()
 
 	// Start server
 	addr := ":" + port
-	log.Info().Msgf("🔍 Health check at http://localhost%s/__health", addr)
+	log.Info().Msgf("Health check: http://localhost%s/__health", addr)
 
 	if err := http.ListenAndServe(addr, router); err != nil {
 		log.Error().Msgf("Server failed to start: %v", err)

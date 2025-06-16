@@ -1,6 +1,7 @@
 package router
 
 import (
+	"github.com/fajar-andriansyah/loan-engine/internal/constants"
 	"net/http"
 	"path/filepath"
 	"strings"
@@ -21,29 +22,27 @@ func GetRouter() chi.Router {
 	r.Use(chiMiddleware.RequestID)
 	r.Use(chiMiddleware.RealIP)
 
-	// Initialize dependencies
 	db := database.GetConn()
 
 	// Repositories
 	authRepo := repositories.NewAuthRepository(db)
 	loanRepo := repositories.NewLoanRepository(db)
 	fileRepo := repositories.NewFileRepository(db)
-	investmentRepo := repositories.NewInvestmentRepository(db) // Add this line
+	investmentRepo := repositories.NewInvestmentRepository(db)
 
 	// Usecases
 	jwtSecret := viper.GetString("jwt.secret")
 	authUsecase := usecase.NewAuthUsecase(authRepo, jwtSecret)
 	loanUsecase := usecase.NewLoanUsecase(loanRepo)
 	fileUsecase := usecase.NewFileUsecase(fileRepo)
-	investmentUsecase := usecase.NewInvestmentUsecase(investmentRepo) // Add this line
+	investmentUsecase := usecase.NewInvestmentUsecase(investmentRepo)
 
 	// Controllers
 	authController := controller.NewAuthController(authUsecase)
 	loanController := controller.NewLoanController(loanUsecase)
 	fileController := controller.NewFileController(fileUsecase)
-	investmentController := controller.NewInvestmentController(investmentUsecase) // Add this line
+	investmentController := controller.NewInvestmentController(investmentUsecase)
 
-	// Static file serving for uploaded documents
 	workDir, _ := filepath.Abs(".")
 	filesDir := http.Dir(filepath.Join(workDir, "uploads"))
 	FileServer(r, "/uploads", filesDir)
@@ -56,23 +55,22 @@ func GetRouter() chi.Router {
 		// Public auth routes
 		r.Post("/auth/login", authController.Login)
 
-		// Protected routes (require authentication)
 		r.Group(func(r chi.Router) {
 			r.Use(middleware.JWTAuthMiddleware())
 
 			// Employee only routes
 			r.Group(func(r chi.Router) {
-				r.Use(middleware.RequireUserType("employee"))
+				r.Use(middleware.RequireUserType(constants.USER_EMPLOYEE))
 
 				// Field validator routes
 				r.Group(func(r chi.Router) {
-					r.Use(middleware.RequireRole("FIELD_VALIDATOR"))
+					r.Use(middleware.RequireRole(constants.ROLE_FIELD_VALIDATOR))
 					r.Post("/files/upload", fileController.UploadSurveyDocument)
 				})
 
 				// Field officer routes
 				r.Group(func(r chi.Router) {
-					r.Use(middleware.RequireRole("FIELD_OFFICER"))
+					r.Use(middleware.RequireRole(constants.ROLE_FIELD_OFFICER))
 					r.Put("/loans/{id}/approve", loanController.ApproveLoan)
 					r.Put("/loans/{id}/disburse", loanController.DisburseLoan)
 				})
@@ -81,16 +79,14 @@ func GetRouter() chi.Router {
 
 			// Borrower routes
 			r.Group(func(r chi.Router) {
-				r.Use(middleware.RequireUserType("borrower"))
+				r.Use(middleware.RequireUserType(constants.USER_BORROWER))
 				r.Post("/loans", loanController.CreateLoanProposal)
 			})
 
 			// Investor routes
 			r.Group(func(r chi.Router) {
-				r.Use(middleware.RequireUserType("investor"))
+				r.Use(middleware.RequireUserType(constants.USER_INVESTOR))
 				r.Post("/loans/{id}/investments", investmentController.CreateInvestment)
-				// r.Get("/loans/available", loanController.GetAvailableLoans)
-				// r.Get("/portfolio", investmentController.GetPortfolio)
 			})
 		})
 
