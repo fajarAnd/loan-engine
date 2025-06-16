@@ -1,9 +1,4 @@
 ###
-
-# *** VIEW GENERATED INVESTMENT AGREEMENT (Individual)
-GET http://localhost:8080/uploads/agreements/investment_agreement_{{loan_id}}_123e4567-e89b-12d3-a456-426614174002.pdf
-
-###
 # *** LOGIN AS INVESTOR FIRST
 POST http://localhost:8080/api/v1/auth/login
 Content-Type: application/json
@@ -171,17 +166,6 @@ Content-Type: application/json
 
 ###
 
-# *** MAKE INVESTMENT - Validation Error (Negative amount)
-POST http://localhost:8080/api/v1/loans/{{loan_id}}/investments
-Authorization: Bearer {{investor_token}}
-Content-Type: application/json
-
-{
-  "investment_amount": -1000.00
-}
-
-###
-
 # *** MAKE INVESTMENT - Exceeds Remaining Amount
 POST http://localhost:8080/api/v1/loans/{{loan_id}}/investments
 Authorization: Bearer {{investor_token}}
@@ -189,39 +173,6 @@ Content-Type: application/json
 
 {
   "investment_amount": 6000000.00
-}
-
-###
-
-# *** MAKE INVESTMENT - Duplicate Investment (Same investor)
-POST http://localhost:8080/api/v1/loans/{{loan_id}}/investments
-Authorization: Bearer {{investor_token}}
-Content-Type: application/json
-
-{
-  "investment_amount": 1000000.00
-}
-
-###
-
-# *** MAKE INVESTMENT - Invalid Loan ID
-POST http://localhost:8080/api/v1/loans/invalid-uuid/investments
-Authorization: Bearer {{investor_token}}
-Content-Type: application/json
-
-{
-  "investment_amount": 1000000.00
-}
-
-###
-
-# *** MAKE INVESTMENT - Non-existent Loan
-POST http://localhost:8080/api/v1/loans/123e4567-e89b-12d3-a456-426614174999/investments
-Authorization: Bearer {{investor_token}}
-Content-Type: application/json
-
-{
-  "investment_amount": 1000000.00
 }
 
 ###
@@ -239,17 +190,6 @@ Content-Type: application/json
 
 # *** MAKE INVESTMENT - No Authentication
 POST http://localhost:8080/api/v1/loans/{{loan_id}}/investments
-Content-Type: application/json
-
-{
-  "investment_amount": 1000000.00
-}
-
-###
-
-# *** MAKE INVESTMENT - Invalid Token
-POST http://localhost:8080/api/v1/loans/{{loan_id}}/investments
-Authorization: Bearer invalid-token-here
 Content-Type: application/json
 
 {

@@ -105,48 +105,6 @@ Content-Type: application/json
 
 ###
 
-# *** APPROVE LOAN - Without Notes
-PUT http://localhost:8080/api/v1/loans/{{loan_id}}/approve
-Authorization: Bearer {{officer_token}}
-Content-Type: application/json
-
-{}
-
-###
-
-# *** APPROVE LOAN - Invalid UUID
-PUT http://localhost:8080/api/v1/loans/invalid-uuid/approve
-Authorization: Bearer {{officer_token}}
-Content-Type: application/json
-
-{
-  "approval_notes": "Test approval"
-}
-
-###
-
-# *** APPROVE LOAN - Non-existent Loan
-PUT http://localhost:8080/api/v1/loans/123e4567-e89b-12d3-a456-426614174999/approve
-Authorization: Bearer {{officer_token}}
-Content-Type: application/json
-
-{
-  "approval_notes": "Test approval"
-}
-
-###
-
-# *** APPROVE LOAN - Wrong User Type (Borrower)
-PUT http://localhost:8080/api/v1/loans/{{loan_id}}/approve
-Authorization: Bearer {{borrower_token}}
-Content-Type: application/json
-
-{
-  "approval_notes": "Test approval"
-}
-
-###
-
 # *** APPROVE LOAN - Wrong Role (Validator)
 PUT http://localhost:8080/api/v1/loans/{{loan_id}}/approve
 Authorization: Bearer {{validator_token}}
@@ -165,21 +123,5 @@ Content-Type: application/json
 {
   "approval_notes": "Test approval"
 }
-
-###
-
-# *** APPROVE LOAN - Already Approved (Should fail on second attempt)
-PUT http://localhost:8080/api/v1/loans/{{loan_id}}/approve
-Authorization: Bearer {{officer_token}}
-Content-Type: application/json
-
-{
-  "approval_notes": "Second approval attempt"
-}
-
-###
-
-# *** VIEW GENERATED AGREEMENT
-GET http://localhost:8080/uploads/agreements/loan_agreement_{{loan_id}}.pdf
 
 ###
