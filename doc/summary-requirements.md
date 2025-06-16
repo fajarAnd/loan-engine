@@ -64,10 +64,9 @@ Based on use case diagram, below are feature we will provide.
 **Description**: Core loan workflow management from proposal to disbursement.
 
 **API:**
-- `POST /api/v1/loans` - Create loan proposal
-- `GET /api/v1/loans/{id}` - Get loan details
-- `PUT /api/v1/loans/{id}/approve` - Approve loan (PROPOSED → APPROVED)
-- `PUT /api/v1/loans/{id}/disburse` - Disburse loan (INVESTED → DISBURSED)
+- Create loan proposal
+- Approve loan (PROPOSED → APPROVED)
+- Disburse loan (INVESTED → DISBURSED)
 
 ---
 
