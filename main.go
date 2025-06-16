@@ -28,7 +28,7 @@ func main() {
 
 	// Start server
 	addr := ":" + port
-	log.Info().Msgf("🔍 Health check at http://localhost%s/__health", addr)
+	log.Info().Msgf("Health check: http://localhost%s/__health", addr)
 
 	if err := http.ListenAndServe(addr, router); err != nil {
 		log.Error().Msgf("Server failed to start: %v", err)

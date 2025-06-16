@@ -1,4 +1,4 @@
-## 🛠 Tech Stack
+## Tech Stack
 
 - **Backend**: Go (Golang) with Chi Router
 - **Database**: PostgreSQL with PGX driver

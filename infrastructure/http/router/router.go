@@ -21,29 +21,27 @@ func GetRouter() chi.Router {
 	r.Use(chiMiddleware.RequestID)
 	r.Use(chiMiddleware.RealIP)
 
-	// Initialize dependencies
 	db := database.GetConn()
 
 	// Repositories
 	authRepo := repositories.NewAuthRepository(db)
 	loanRepo := repositories.NewLoanRepository(db)
 	fileRepo := repositories.NewFileRepository(db)
-	investmentRepo := repositories.NewInvestmentRepository(db) // Add this line
+	investmentRepo := repositories.NewInvestmentRepository(db)
 
 	// Usecases
 	jwtSecret := viper.GetString("jwt.secret")
 	authUsecase := usecase.NewAuthUsecase(authRepo, jwtSecret)
 	loanUsecase := usecase.NewLoanUsecase(loanRepo)
 	fileUsecase := usecase.NewFileUsecase(fileRepo)
-	investmentUsecase := usecase.NewInvestmentUsecase(investmentRepo) // Add this line
+	investmentUsecase := usecase.NewInvestmentUsecase(investmentRepo)
 
 	// Controllers
 	authController := controller.NewAuthController(authUsecase)
 	loanController := controller.NewLoanController(loanUsecase)
 	fileController := controller.NewFileController(fileUsecase)
-	investmentController := controller.NewInvestmentController(investmentUsecase) // Add this line
+	investmentController := controller.NewInvestmentController(investmentUsecase)
 
-	// Static file serving for uploaded documents
 	workDir, _ := filepath.Abs(".")
 	filesDir := http.Dir(filepath.Join(workDir, "uploads"))
 	FileServer(r, "/uploads", filesDir)
@@ -56,7 +54,6 @@ func GetRouter() chi.Router {
 		// Public auth routes
 		r.Post("/auth/login", authController.Login)
 
-		// Protected routes (require authentication)
 		r.Group(func(r chi.Router) {
 			r.Use(middleware.JWTAuthMiddleware())
 
@@ -89,8 +86,6 @@ func GetRouter() chi.Router {
 			r.Group(func(r chi.Router) {
 				r.Use(middleware.RequireUserType("investor"))
 				r.Post("/loans/{id}/investments", investmentController.CreateInvestment)
-				// r.Get("/loans/available", loanController.GetAvailableLoans)
-				// r.Get("/portfolio", investmentController.GetPortfolio)
 			})
 		})
 

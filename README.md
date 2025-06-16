@@ -31,7 +31,7 @@
 
 ---
 
-## 🏃‍♂️ How to Run
+## How to Run
 
 ### 1. Clone Repository
 ```bash
@@ -106,7 +106,7 @@ curl http://localhost:8080/__health
 
 ---
 
-## 👥 Sample Users (From Seeding)
+## Sample Users (From Seeding)
 
 The seeding process creates sample users for testing:
 
@@ -131,7 +131,7 @@ The seeding process creates sample users for testing:
 
 ---
 
-## 🧪 How to Test
+## How to Test
 
 ### 1. API Testing
 Use the provided HTTP test files in the `doc/api/` directory:
